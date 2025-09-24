@@ -1,48 +1,45 @@
+// context/AuthContext.tsx
 'use client';
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { Session, User } from '@supabase/supabase-js';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { User } from '@supabase/supabase-js';
 
-type AuthContextType = {
+interface AuthContextType {
   user: User | null;
-  session: Session | null;
   loading: boolean;
-};
+}
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  session: null,
   loading: true,
 });
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-    const [loading, setLoading] = useState(true);
-    const supabase = createClient();
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const setData = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      setLoading(false);
-    };
-      setData();
-      
+ useEffect(() => {
+  // check current session
+  supabase.auth.getSession().then(({ data }) => {
+    setUser(data.session?.user ?? null);
+    setLoading(false);
+  });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-    });
+  // listen for auth changes
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUser(session?.user ?? null);
+    setLoading(false);
+  });
 
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, []);
+  return () => subscription.unsubscribe();
+}, []);
+
 
   return (
-    <AuthContext.Provider value={{ user, session, loading }}>
+    <AuthContext.Provider value={{ user, loading }}>
       {children}
     </AuthContext.Provider>
   );
