@@ -1,42 +1,35 @@
-// context/AuthContext.tsx
-'use client';
-import { createContext, useContext, useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { User } from '@supabase/supabase-js';
+"use client";
+import { createContext, useContext, useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-});
+const AuthContext = createContext<any>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const supabase = createClient();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
- useEffect(() => {
-  // check current session
-  supabase.auth.getSession().then(({ data }) => {
-    setUser(data.session?.user ?? null);
-    setLoading(false);
-  });
+  useEffect(() => {
+    // Fetch the current user on mount
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+      setLoading(false);
+    };
 
-  // listen for auth changes
-  const {
-    data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, session) => {
-    setUser(session?.user ?? null);
-    setLoading(false);
-  });
+    getUser();
 
-  return () => subscription.unsubscribe();
-}, []);
+    // Listen to auth changes
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
 
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
