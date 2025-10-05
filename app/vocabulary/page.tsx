@@ -1,0 +1,362 @@
+"use client"
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { Loader2 } from 'lucide-react';
+import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from 'next/navigation';
+
+// Data and Types
+import { categories } from "@/data/vocabularyData";
+import { VocabularyItem } from "@/components/types";
+
+// Components
+import CategorySelector from '@/components/vocabulary/CategorySelector';
+import VocabularyCard from '@/components/vocabulary/VocabularyCard';
+import VocabularyGrid from '@/components/vocabulary/VocabularyGrid';
+import QuizMode from '@/components/vocabulary/QuizMode';
+
+const VocabularyPage = () => {
+  // --- State Initialization ---
+  const [selectedCategory, setSelectedCategory] = useState<string>('fruits');
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [viewMode, setViewMode] = useState<'grid' | 'cards'>('cards');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [learnedWords, setLearnedWords] = useState<Set<string>>(new Set());
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizScore, setQuizScore] = useState({ correct: 0, total: 0 });
+  const [currentQuizWord, setCurrentQuizWord] = useState<VocabularyItem | null>(null);
+  const [quizOptions, setQuizOptions] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  // --- Hooks and Context ---
+  const supabase = createClient();
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  // --- Computed Values ---
+  const currentCategory = useMemo(() => 
+    categories.find(cat => cat.id === selectedCategory) || categories[0]
+  , [selectedCategory]);
+  
+  const currentItem = useMemo(() => 
+    currentCategory.items[currentIndex]
+  , [currentCategory, currentIndex]);
+
+  const totalWordsInAllCategories = useMemo(() => 
+    categories.reduce((sum, cat) => sum + cat.items.length, 0)
+  , []);
+  
+  // --- Functions (Supabase & Logic) ---
+
+  const resetQuiz = () => {
+    setQuizScore({ correct: 0, total: 0 });
+    setCurrentQuizWord(null);
+    setShowQuiz(false);
+  };
+
+  const handleCategoryChange = (id: string) => {
+      setSelectedCategory(id);
+      setCurrentIndex(0);
+      resetQuiz();
+  };
+
+  // Load learned words from database
+  useEffect(() => {
+    const loadLearnedWords = async () => {
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('vocabulary_progress')
+          .select('word, category')
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Error loading learned words:', error);
+          setIsLoading(false);
+          return;
+        }
+
+        const learned = new Set(data?.map(item => item.word) || []);
+        setLearnedWords(learned);
+      } catch (error) {
+        console.error('Error loading learned words:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (!authLoading) {
+      loadLearnedWords();
+    }
+  }, [user, authLoading, supabase]);
+
+  // Save quiz results to database
+  const saveQuizResult = async (score: number, total: number, category: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('vocabulary_quiz_results')
+        .insert({
+          user_id: user.id,
+          category: category,
+          score: score,
+          total_questions: total,
+          percentage: Math.round((score / total) * 100)
+        });
+
+      if (error) {
+        console.error('Error saving quiz result:', error);
+      }
+    } catch (error) {
+      console.error('Error saving quiz result:', error);
+    }
+  };
+
+  // Speak the word
+  const speakWord = (text: string) => {
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.8;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      
+      utterance.onstart = () => setIsPlaying(true);
+      utterance.onend = () => setIsPlaying(false);
+      
+      speechSynthesis.speak(utterance);
+    }
+  };
+
+  // Mark word as learned
+  const toggleLearned = async (word: string) => {
+    const newLearned = new Set(learnedWords);
+    const isLearning = !newLearned.has(word);
+
+    if (isLearning) {
+      newLearned.add(word);
+    } else {
+      newLearned.delete(word);
+    }
+    setLearnedWords(newLearned);
+
+    // Save to database if user is logged in
+    if (user) {
+      setIsSaving(true);
+      try {
+        if (isLearning) {
+          // Add to database
+          const { error } = await supabase
+            .from('vocabulary_progress')
+            .insert({
+              user_id: user.id,
+              word: word,
+              category: selectedCategory
+            });
+
+          if (error && error.code !== '23505') { // Ignore duplicate key error
+            console.error('Error saving learned word:', error);
+            // Revert the change if save failed
+            newLearned.delete(word);
+            setLearnedWords(new Set(newLearned));
+          }
+        } else {
+          // Remove from database
+          const { error } = await supabase
+            .from('vocabulary_progress')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('word', word);
+
+          if (error) {
+            console.error('Error removing learned word:', error);
+            // Revert the change if delete failed
+            newLearned.add(word);
+            setLearnedWords(new Set(newLearned));
+          }
+        }
+      } catch (error) {
+        console.error('Error updating learned word:', error);
+      } finally {
+        setIsSaving(false);
+      }
+    }
+  };
+
+  // Navigation
+  const goToNext = () => {
+    if (currentIndex < currentCategory.items.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      setCurrentIndex(0);
+    }
+  };
+
+  const goToPrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    } else {
+      setCurrentIndex(currentCategory.items.length - 1);
+    }
+  };
+
+  // Quiz Logic
+  const generateQuizQuestion = () => {
+    const availableItems = currentCategory.items;
+    if (availableItems.length < 4) return; 
+
+    const randomIndex = Math.floor(Math.random() * availableItems.length);
+    const correctWord = availableItems[randomIndex];
+    
+    const wrongOptions = availableItems
+      .filter(item => item.word !== correctWord.word)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3)
+      .map(item => item.word);
+    
+    const allOptions = [...wrongOptions, correctWord.word].sort(() => Math.random() - 0.5);
+    
+    setCurrentQuizWord(correctWord);
+    setQuizOptions(allOptions);
+  };
+  
+  const startQuiz = () => {
+    setQuizScore({ correct: 0, total: 0 });
+    generateQuizQuestion();
+    setShowQuiz(true);
+  };
+
+  const handleQuizAnswer = (selectedWord: string) => {
+    if (!currentQuizWord) return;
+    
+    const isCorrect = selectedWord === currentQuizWord.word;
+    const newScore = {
+      correct: quizScore.correct + (isCorrect ? 1 : 0),
+      total: quizScore.total + 1
+    };
+    setQuizScore(newScore);
+    setCurrentQuizWord(null); // Hide question immediately
+
+    setTimeout(() => {
+      if (newScore.total < 5) {
+        generateQuizQuestion(); // Next question
+      } else {
+        if (user) {
+          saveQuizResult(newScore.correct, newScore.total, selectedCategory);
+        }
+        setShowQuiz(false); // End quiz and show score in QuizMode
+      }
+    }, 1000);
+  };
+
+
+  // --- Render ---
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-slate-900 p-6">
+      {/* Loading State */}
+      {(authLoading || isLoading) ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-indigo-400" />
+            <p className="text-gray-300">Loading vocabulary...</p>
+          </div>
+        </div>
+      ) : (
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Category Selector Component */}
+        <CategorySelector
+          categories={categories}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={handleCategoryChange}
+          learnedWords={learnedWords}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          user={user}
+            />
+            
+            
+
+        {/* Conditional Content (Quiz / Card View / Grid View) */}
+        {showQuiz || quizScore.total > 0 ? (
+          <QuizMode
+            currentQuizWord={currentQuizWord}
+            quizOptions={quizOptions}
+            quizScore={quizScore}
+            handleQuizAnswer={handleQuizAnswer}
+            resetQuiz={resetQuiz}
+          />
+        ) : viewMode === 'cards' ? (
+          <VocabularyCard
+            currentCategory={currentCategory}
+            currentItem={currentItem}
+            currentIndex={currentIndex}
+            learnedWords={learnedWords}
+            isSaving={isSaving}
+            isPlaying={isPlaying}
+            goToPrevious={goToPrevious}
+            goToNext={goToNext}
+            speakWord={speakWord}
+            toggleLearned={toggleLearned}
+            startQuiz={startQuiz}
+          />
+        ) : (
+          <VocabularyGrid
+            currentCategory={currentCategory}
+            learnedWords={learnedWords}
+            speakWord={speakWord}
+            toggleLearned={toggleLearned}
+            startQuiz={startQuiz}
+            setCardView={(index) => {
+                setCurrentIndex(index);
+                setViewMode('cards');
+            }}
+          />
+        )}
+        
+
+        {/* Stats Footer */}
+        <div className="mt-6 bg-gray-800 rounded-xl p-6 border border-gray-700">
+          <div className="flex items-center justify-between">
+            <div className="text-center flex-1">
+              <p className="text-gray-400 text-sm">Total Words</p>
+              <p className="text-2xl font-bold text-gray-200">
+                {totalWordsInAllCategories}
+              </p>
+            </div>
+            <div className="text-center flex-1">
+              <p className="text-gray-400 text-sm">Learned</p>
+              <p className="text-2xl font-bold text-green-400">{learnedWords.size}</p>
+            </div>
+            <div className="text-center flex-1">
+              <p className="text-gray-400 text-sm">Progress</p>
+              <p className="text-2xl font-bold text-indigo-400">
+                {Math.round((learnedWords.size / totalWordsInAllCategories) * 100)}%
+              </p>
+            </div>
+          </div>
+          {!user && (
+            <div className="mt-4 p-3 bg-amber-950/30 border border-amber-800 rounded-lg text-center">
+              <p className="text-sm text-amber-300">
+                🔒 Log in to save your progress and see it on your dashboard
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+      )}
+
+      {/* Hidden audio element */}
+      <audio ref={audioRef} className="hidden" />
+    </div>
+  );
+};
+
+export default VocabularyPage;

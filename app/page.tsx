@@ -17,37 +17,43 @@ const LandingPage = () => {
       icon: BookOpen,
       title: "Interactive Reading",
       description: "Read diverse topics with instant word definitions and translations",
-      color: "from-blue-500 to-cyan-500"
+      color: "from-blue-500 to-cyan-500",
+      path: "/aiTopic"
     },
     {
       icon: Mic,
       title: "Pronunciation Practice",
       description: "AI-powered speech recognition with real-time feedback and phonetics",
-      color: "from-green-500 to-emerald-500"
+      color: "from-green-500 to-emerald-500",
+      path: "/custom-sentences"
     },
     {
       icon: MessageCircle,
       title: "AI Conversations",
       description: "Generate custom dialogues on any topic with multiple participants",
-      color: "from-purple-500 to-pink-500"
+      color: "from-purple-500 to-pink-500",
+      path: "/aiPartner"
     },
     {
       icon: Brain,
       title: "Vocabulary Builder",
       description: "Smart word tracking and spaced repetition for lasting retention",
-      color: "from-orange-500 to-red-500"
+      color: "from-orange-500 to-red-500",
+      path: "/vocabulary"
     },
     {
       icon: Trophy,
       title: "Progress Tracking",
       description: "Monitor your improvement with detailed analytics and achievements",
-      color: "from-yellow-500 to-amber-500"
+      color: "from-yellow-500 to-amber-500",
+      path: "/dashboard"
     },
     {
       icon: Globe,
       title: "Multi-Subject Learning",
       description: "Expand beyond language - explore math, science, and more",
-      color: "from-indigo-500 to-violet-500"
+      color: "from-indigo-500 to-violet-500",
+      path: "/dashboard"
     }
   ];
 
@@ -182,65 +188,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-slate-900/80 backdrop-blur-md border-b border-slate-800 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-6 h-6" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                LearnHub
-              </span>
-            </div>
-
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-slate-300 hover:text-white transition-colors">Features</a>
-              <a href="#services" className="text-slate-300 hover:text-white transition-colors">Services</a>
-              <a href="#pricing" className="text-slate-300 hover:text-white transition-colors">Pricing</a>
-              <a href="#testimonials" className="text-slate-300 hover:text-white transition-colors">Reviews</a>
-              <Link href="/auth/login">
-                <button className="px-4 py-2 text-slate-300 hover:text-white transition-colors">
-                Sign In
-              </button>
-              </Link>
-              
-              <Link href="/auth/register">
-                <button className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-medium transition-all">
-                Get Started
-              </button>
-              </Link>
-              
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button 
-              className="md:hidden text-slate-300"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-slate-900 border-t border-slate-800">
-            <div className="px-4 py-4 space-y-3">
-              <a href="#features" className="block text-slate-300 hover:text-white">Features</a>
-              <a href="#services" className="block text-slate-300 hover:text-white">Services</a>
-              <a href="#pricing" className="block text-slate-300 hover:text-white">Pricing</a>
-              <a href="#testimonials" className="block text-slate-300 hover:text-white">Reviews</a>
-              <button className="w-full text-left text-slate-300 hover:text-white">Sign In</button>
-              <button className="w-full px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-medium">
-                Get Started
-              </button>
-            </div>
-          </div>
-        )}
-      </nav>
-
+     
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4">
         <div className="max-w-7xl mx-auto text-center">
@@ -262,10 +210,12 @@ const LandingPage = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-medium text-lg flex items-center justify-center gap-2 transition-all shadow-lg shadow-purple-500/25">
-              Start Learning Free
-              <ArrowRight size={20} />
-            </button>
+            <Link href="/register">
+              <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-medium text-lg flex items-center justify-center gap-2 transition-all shadow-lg shadow-purple-500/25">
+                Start Learning Free
+                <ArrowRight size={20} />
+              </button>
+            </Link>
             <button className="px-8 py-4 bg-slate-800 hover:bg-slate-700 rounded-lg font-medium text-lg transition-all border border-slate-700">
               Watch Demo
             </button>
@@ -303,16 +253,19 @@ const LandingPage = () => {
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <div 
-                  key={index}
-                  className="p-6 bg-slate-800/50 border border-slate-700 rounded-xl hover:border-slate-600 transition-all group"
-                >
-                  <div className={`w-12 h-12 bg-gradient-to-br ${feature.color} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-6 h-6" />
+                <Link key={index} href={feature.path}>
+                  <div className="p-6 bg-slate-800/50 border border-slate-700 rounded-xl hover:border-slate-600 transition-all group cursor-pointer">
+                    <div className={`w-12 h-12 bg-gradient-to-br ${feature.color} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-slate-400">{feature.description}</p>
+                    <div className="flex items-center gap-2 text-sm text-purple-400 mt-4 group-hover:gap-3 transition-all">
+                      <span>Explore</span>
+                      <ArrowRight size={16} />
+                    </div>
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-slate-400">{feature.description}</p>
-                </div>
+                </Link>
               );
             })}
           </div>
@@ -440,13 +393,15 @@ const LandingPage = () => {
                   ))}
                 </ul>
 
-                <button className={`w-full py-3 rounded-lg font-medium transition-all ${
-                  plan.popular
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500'
-                    : 'bg-slate-700 hover:bg-slate-600'
-                }`}>
-                  {plan.cta}
-                </button>
+                <Link href="/register">
+                  <button className={`w-full py-3 rounded-lg font-medium transition-all ${
+                    plan.popular
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500'
+                      : 'bg-slate-700 hover:bg-slate-600'
+                  }`}>
+                    {plan.cta}
+                  </button>
+                </Link>
               </div>
             ))}
           </div>
@@ -463,10 +418,12 @@ const LandingPage = () => {
             <p className="text-xl text-slate-300 mb-8">
               Join thousands of learners improving their skills every day
             </p>
-            <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-medium text-lg inline-flex items-center gap-2 transition-all shadow-lg shadow-purple-500/25">
-              Get Started for Free
-              <ArrowRight size={20} />
-            </button>
+            <Link href="/register">
+              <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-medium text-lg inline-flex items-center gap-2 transition-all shadow-lg shadow-purple-500/25">
+                Get Started for Free
+                <ArrowRight size={20} />
+              </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -490,9 +447,9 @@ const LandingPage = () => {
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-slate-400 text-sm">
-                <li><a href="#" className="hover:text-white">Features</a></li>
-                <li><a href="#" className="hover:text-white">Pricing</a></li>
-                <li><a href="#" className="hover:text-white">API</a></li>
+                <li><a href="#features" className="hover:text-white">Features</a></li>
+                <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
+                <li><Link href="/dashboard" className="hover:text-white">Dashboard</Link></li>
                 <li><a href="#" className="hover:text-white">Roadmap</a></li>
               </ul>
             </div>
