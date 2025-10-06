@@ -98,7 +98,7 @@ IMPORTANT: Respond ONLY with the JSON array, no additional text or explanation.`
     const generatedText = data.choices[0].message.content;
 
     // Try to extract JSON from the response
-    let jsonMatch = generatedText.match(/\[[\s\S]*\]/);
+    const jsonMatch = generatedText.match(/\[[\s\S]*\]/);
     let conversationData;
 
     if (jsonMatch) {

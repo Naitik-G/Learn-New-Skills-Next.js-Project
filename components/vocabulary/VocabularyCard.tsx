@@ -69,7 +69,7 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({
           </div>
 
           <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-4">
-            <p className="text-gray-300 italic">"{currentItem.example}"</p>
+            <p className="text-gray-300 italic">&quot;{currentItem.example}&quot;</p>
           </div>
 
           <button

@@ -65,7 +65,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
           <div className="flex items-start space-x-3">
             <BookOpen className="text-blue-400 mt-0.5 flex-shrink-0" size={20} />
             <div>
-              <p className="text-blue-300 font-medium mb-1">👋 You're in Guest Mode</p>
+              <p className="text-blue-300 font-medium mb-1">👋 You&apos;re in Guest Mode</p>
               <p className="text-blue-400 text-sm mb-2">
                 You can explore and learn vocabulary, but your progress won't be saved.
               </p>

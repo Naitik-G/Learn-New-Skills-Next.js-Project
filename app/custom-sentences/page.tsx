@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Loader2, AlertTriangle, Play, Pause, RotateCcw, Volume2, ChevronLeft, ChevronRight, Mic, MicOff } from 'lucide-react';
+import { Loader2, AlertTriangle, } from 'lucide-react';
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { sentencesByLevel, type Sentence } from "@/data/pronunciation";

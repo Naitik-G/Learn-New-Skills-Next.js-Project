@@ -89,7 +89,7 @@ export default function TopicsPage() {
                   <Lock className="w-5 h-5 text-yellow-400" />
                   <div>
                     <p className="text-sm font-medium text-yellow-100">
-                      You're browsing in guest mode
+                      You&apos;re browsing in guest mode
                     </p>
                     <p className="text-xs text-yellow-200">
                       Login to generate custom AI conversations and save your progress

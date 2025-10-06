@@ -80,7 +80,7 @@ const QuizMode: React.FC<QuizModeProps> = ({
           ) : percentage >= 60 ? (
             <p className="text-yellow-400 text-lg">Good job! Keep practicing.</p>
           ) : (
-            <p className="text-orange-400 text-lg">Keep learning, you'll improve!</p>
+            <p className="text-orange-400 text-lg">Keep learning, you&apos;ll improve!</p>
           )}
         </div>
 

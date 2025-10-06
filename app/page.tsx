@@ -4,8 +4,7 @@ import React, { useState } from 'react';
 import { 
   BookOpen, Mic, MessageCircle, Brain, Trophy, Globe, 
   ArrowRight, Check, Star, Users, Zap, Target, Clock,
-  BarChart, Headphones, PenTool, Calculator, FlaskConical,
-  Code, Music, Palette, Menu, X
+  Calculator, Palette, 
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -336,7 +335,7 @@ const LandingPage = () => {
                     <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-slate-300 mb-6">"{testimonial.content}"</p>
+                <p className="text-slate-300 mb-6">&quot;{testimonial.content}&quot;</p>
                 <div>
                   <div className="font-semibold">{testimonial.name}</div>
                   <div className="text-sm text-slate-400">{testimonial.role}</div>

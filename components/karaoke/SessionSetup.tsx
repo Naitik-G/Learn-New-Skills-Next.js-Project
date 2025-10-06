@@ -93,7 +93,7 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
             )}
 
             <p className="text-slate-400 mb-6">
-              You'll be the host and can control playback for all participants.
+              You&apos;ll be the host and can control playback for all participants.
             </p>
 
             <button
