@@ -5,7 +5,7 @@ import { StatCardGrid } from "@/components/dashboard/StatsMCardGrid";
 import { LearningModules } from "@/components/dashboard/LearningModules";
 import { RecentQuizResults } from "@/components/dashboard/RecentQuizResult";
 import { LearningProgress } from "@/components/dashboard/LerningProgress";
-import { useDashboardData } from "@/hooks/useDashboardData";
+import { useDashboardData } from "@/hooks/useDashbardData";
 
 export default function Dashboard() {
   const { 
