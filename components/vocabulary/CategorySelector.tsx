@@ -1,5 +1,6 @@
+// components/vocabulary/CategorySelector.tsx
 import React from 'react';
-import { BookOpen, Grid, List } from 'lucide-react';
+import { BookOpen, Grid, List, Lock } from 'lucide-react';
 import { Category } from '@/components/types';
 import { User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
@@ -12,6 +13,7 @@ interface CategorySelectorProps {
   viewMode: 'grid' | 'cards';
   setViewMode: (mode: 'grid' | 'cards') => void;
   user: User | null;
+  guestLimit?: number;
 }
 
 const CategorySelector: React.FC<CategorySelectorProps> = ({
@@ -22,6 +24,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   viewMode,
   setViewMode,
   user,
+  guestLimit = 10,
 }) => {
   const router = useRouter();
 
@@ -31,7 +34,6 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
         <div className="flex items-center space-x-3">
           <BookOpen className="text-indigo-400" size={32} />
           <h1 className="text-3xl font-bold text-gray-100">Vocabulary Builder</h1>
-          
         </div>
         <div className="flex items-center space-x-4">
           {!user && (
@@ -59,27 +61,6 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
         </div>
       </div>
 
-      {/* Guest Mode Banner */}
-      {!user && (
-        <div className="mb-4 p-4 bg-blue-950/30 border border-blue-800 rounded-lg">
-          <div className="flex items-start space-x-3">
-            <BookOpen className="text-blue-400 mt-0.5 flex-shrink-0" size={20} />
-            <div>
-              <p className="text-blue-300 font-medium mb-1">👋 You&apos;re in Guest Mode</p>
-              <p className="text-blue-400 text-sm mb-2">
-                You can explore and learn vocabulary, but your progress won't be saved.
-              </p>
-              <button
-                onClick={() => router.push('/login')}
-                className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                Log in to Save Progress
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Category Selection */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {categories.map(category => {
@@ -88,6 +69,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
           const learnedInCategory = category.items.filter(item => 
             learnedWords.has(item.word)
           ).length;
+          const isLimited = !user && category.items.length === guestLimit;
 
           return (
             <button
@@ -110,8 +92,9 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
               }`}>
                 {category.name}
               </h3>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-1 flex items-center justify-center gap-1">
                 {learnedInCategory}/{category.items.length} learned
+                {isLimited && <Lock size={10} className="text-amber-400" />}
               </p>
             </button>
           );

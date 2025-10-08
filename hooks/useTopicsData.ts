@@ -14,7 +14,7 @@ interface PopupPosition {
 export function useTopicsData() {
   const { user } = useAuth();
   const supabase = createClient();
-  const allCategoryKeys = useMemo(() => Object.keys(categories), []);
+  const allCategoryKeys = useMemo(() => Object.keys(categories).filter(k => k !== 'custom'), []);
 
   // --- Core States ---
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -38,18 +38,19 @@ export function useTopicsData() {
   // --- Derived Data ---
 
   const allTopics = useMemo(() => {
-    return {
-      ...staticTopicsData,
-      ...customTopics.reduce((acc, topic) => {
-        acc[topic.id] = topic;
-        return acc;
-      }, {} as Record<string, Topic>)
-    };
+    // Merge static topics with custom topics
+    const merged = { ...staticTopicsData };
+    
+    customTopics.forEach(topic => {
+      merged[topic.id] = topic;
+    });
+    
+    return merged;
   }, [customTopics]);
 
   const topic = selectedId ? allTopics[selectedId] : null;
 
-  // Helper to get current conversation lines
+  // Helper to get current conversation lines (NO STATE UPDATES HERE)
   const getCurrentConversationLines = useCallback(() => {
     if (!topic) return [];
     
@@ -61,7 +62,6 @@ export function useTopicsData() {
     // If we have nested conversations but no scene selected, use first scene
     if (topic.conversations && Object.keys(topic.conversations).length > 0) {
       const firstSceneKey = Object.keys(topic.conversations)[0];
-      setCurrentScene(firstSceneKey); // Auto-select first scene
       return topic.conversations[firstSceneKey].dialogue;
     }
     
@@ -70,31 +70,49 @@ export function useTopicsData() {
   }, [topic, currentScene]);
 
   const groupedTopics = useMemo(() => {
-    return Object.entries(allTopics).reduce((acc, [id, topic]) => {
-      const categoryKeys = allCategoryKeys.filter(k => k !== 'custom');
-      const category = topic.isCustom ? 'custom' : (topic.category || categoryKeys[Math.floor(Math.random() * categoryKeys.length)]);
+    return Object.entries(allTopics).reduce((acc, [id, topicItem]) => {
+      // Skip custom topics - don't group them
+      if (topicItem.isCustom) {
+        return acc;
+      }
+      
+      // Only process non-custom topics
+      const category = topicItem.category || allCategoryKeys[0] || 'general';
       
       if (!acc[category]) {
         acc[category] = [];
       }
-      acc[category].push({ id, ...topic, category });
+      acc[category].push({ id, ...topicItem, category });
       return acc;
     }, {} as Record<string, Topic[]>);
   }, [allTopics, allCategoryKeys]);
 
-  // Reset scene when topic changes
+  // Auto-select first scene when topic changes or when topic has conversations but no scene is selected
   useEffect(() => {
-    if (topic && topic.conversations) {
-      const firstSceneKey = Object.keys(topic.conversations)[0];
-      setCurrentScene(firstSceneKey);
+    if (!topic) {
+      setCurrentScene(null);
+      return;
+    }
+
+    if (topic.conversations && Object.keys(topic.conversations).length > 0) {
+      // Only set current scene if it's not already set or if it's invalid
+      const conversationKeys = Object.keys(topic.conversations);
+      
+      if (!currentScene || !topic.conversations[currentScene]) {
+        const firstSceneKey = conversationKeys[0];
+        setCurrentScene(firstSceneKey);
+      }
     } else {
       setCurrentScene(null);
     }
-  }, [topic]);
+  }, [topic, currentScene]);
 
   // --- Data Fetching Logic ---
   const loadCustomTopics = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setCustomTopics([]);
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -104,11 +122,18 @@ export function useTopicsData() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading custom topics:', error);
+        console.error('Error loading custom topics:', error.message || error);
+        // Don't throw, just log and continue with empty array
+        setCustomTopics([]);
         return;
       }
 
-      const topics: Topic[] = data?.map(item => ({
+      if (!data || data.length === 0) {
+        setCustomTopics([]);
+        return;
+      }
+
+      const topics: Topic[] = data.map(item => ({
         id: item.id,
         title: item.title,
         conversation: item.conversation || [],
@@ -117,18 +142,17 @@ export function useTopicsData() {
         isCustom: true,
         participants: item.participants || 2,
         createdAt: item.created_at
-      })) || [];
+      }));
 
       setCustomTopics(topics);
     } catch (error) {
-      console.error('Error loading custom topics:', error);
+      console.error('Error in loadCustomTopics:', error);
+      setCustomTopics([]);
     }
   }, [user, supabase]);
 
   useEffect(() => {
-    if (user) {
-      loadCustomTopics();
-    }
+    loadCustomTopics();
   }, [user, loadCustomTopics]);
 
   // --- Interaction Handlers ---
@@ -212,8 +236,8 @@ export function useTopicsData() {
         .insert({
           user_id: user.id,
           title: conversationTopic.trim(),
-          conversation: data.conversation, // Flat conversation for backward compatibility
-          conversations: data.conversations, // Nested conversations if provided
+          conversation: data.conversation,
+          conversations: data.conversations,
           participants: participantCount,
           topic_description: conversationTopic.trim()
         })
@@ -282,6 +306,7 @@ export function useTopicsData() {
     user,
     topic,
     groupedTopics,
+    customTopics,
     categories,
     selectedId,
     openCategories,

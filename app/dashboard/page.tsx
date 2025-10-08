@@ -1,6 +1,6 @@
 // app/dashboard/page.tsx
 "use client";
-import { useDashboardData } from "@/hooks/UseDAshboardData";
+import { useDashboardData } from "@/hooks/useDashboardData";
 import { LoadingState } from "@/components/dashboard/LoadingStats";
 import { StatCardGrid } from "@/components/dashboard/StatsMCardGrid";
 import { LearningModules } from "@/components/dashboard/LearningModules";
@@ -16,7 +16,9 @@ export default function Dashboard() {
     handleLogout,
     statCards,
     learningModules,
-    vocabularyStats
+    vocabularyStats,
+    pronunciationStats,
+    conversationStats,
   } = useDashboardData();
 
   if (loading) {
@@ -28,9 +30,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      {/* Header */}
-      
-
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
@@ -55,9 +54,12 @@ export default function Dashboard() {
           <RecentQuizResults results={results} />
 
           {/* Progress Chart */}
-          <LearningProgress stats={stats} vocabularyStats={vocabularyStats} />
-                  
-
+          <LearningProgress 
+            stats={stats} 
+            vocabularyStats={vocabularyStats}
+            pronunciationStats={pronunciationStats}
+            conversationStats={conversationStats}
+          />
         </div>
       </main>
     </div>

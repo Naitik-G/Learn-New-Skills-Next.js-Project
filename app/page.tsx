@@ -417,7 +417,7 @@ const LandingPage = () => {
             <p className="text-xl text-slate-300 mb-8">
               Join thousands of learners improving their skills every day
             </p>
-            <Link href="/register">
+            <Link href="/auth/register">
               <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-medium text-lg inline-flex items-center gap-2 transition-all shadow-lg shadow-purple-500/25">
                 Get Started for Free
                 <ArrowRight size={20} />

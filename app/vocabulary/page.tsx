@@ -1,6 +1,7 @@
+// app/vocabulary/page.tsx
 "use client"
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock, LogIn } from 'lucide-react';
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from 'next/navigation';
@@ -14,6 +15,8 @@ import CategorySelector from '@/components/vocabulary/CategorySelector';
 import VocabularyCard from '@/components/vocabulary/VocabularyCard';
 import VocabularyGrid from '@/components/vocabulary/VocabularyGrid';
 import QuizMode from '@/components/vocabulary/QuizMode';
+
+const GUEST_LIMIT_PER_CATEGORY = 10;
 
 const VocabularyPage = () => {
   // --- State Initialization ---
@@ -36,15 +39,27 @@ const VocabularyPage = () => {
   const router = useRouter();
 
   // --- Computed Values ---
+  // Limit categories for guest users
+  const limitedCategories = useMemo(() => {
+    return categories.map(cat => ({
+      ...cat,
+      items: user ? cat.items : cat.items.slice(0, GUEST_LIMIT_PER_CATEGORY)
+    }));
+  }, [user]);
+
   const currentCategory = useMemo(() => 
-    categories.find(cat => cat.id === selectedCategory) || categories[0]
-  , [selectedCategory]);
+    limitedCategories.find(cat => cat.id === selectedCategory) || limitedCategories[0]
+  , [selectedCategory, limitedCategories]);
   
   const currentItem = useMemo(() => 
     currentCategory.items[currentIndex]
   , [currentCategory, currentIndex]);
 
   const totalWordsInAllCategories = useMemo(() => 
+    limitedCategories.reduce((sum, cat) => sum + cat.items.length, 0)
+  , [limitedCategories]);
+
+  const totalActualWords = useMemo(() => 
     categories.reduce((sum, cat) => sum + cat.items.length, 0)
   , []);
   
@@ -152,7 +167,6 @@ const VocabularyPage = () => {
       setIsSaving(true);
       try {
         if (isLearning) {
-          // Add to database
           const { error } = await supabase
             .from('vocabulary_progress')
             .insert({
@@ -161,14 +175,12 @@ const VocabularyPage = () => {
               category: selectedCategory
             });
 
-          if (error && error.code !== '23505') { // Ignore duplicate key error
+          if (error && error.code !== '23505') {
             console.error('Error saving learned word:', error);
-            // Revert the change if save failed
             newLearned.delete(word);
             setLearnedWords(new Set(newLearned));
           }
         } else {
-          // Remove from database
           const { error } = await supabase
             .from('vocabulary_progress')
             .delete()
@@ -177,7 +189,6 @@ const VocabularyPage = () => {
 
           if (error) {
             console.error('Error removing learned word:', error);
-            // Revert the change if delete failed
             newLearned.add(word);
             setLearnedWords(new Set(newLearned));
           }
@@ -242,25 +253,23 @@ const VocabularyPage = () => {
       total: quizScore.total + 1
     };
     setQuizScore(newScore);
-    setCurrentQuizWord(null); // Hide question immediately
+    setCurrentQuizWord(null);
 
     setTimeout(() => {
       if (newScore.total < 5) {
-        generateQuizQuestion(); // Next question
+        generateQuizQuestion();
       } else {
         if (user) {
           saveQuizResult(newScore.correct, newScore.total, selectedCategory);
         }
-        setShowQuiz(false); // End quiz and show score in QuizMode
+        setShowQuiz(false);
       }
     }, 1000);
   };
 
-
   // --- Render ---
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-slate-900 p-6">
-      {/* Loading State */}
       {(authLoading || isLoading) ? (
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
@@ -271,20 +280,42 @@ const VocabularyPage = () => {
       ) : (
       <div className="max-w-7xl mx-auto">
         
+        {/* Guest Limit Banner */}
+        {!user && (
+          <div className="mb-6 p-4 bg-amber-950/30 border border-amber-800 rounded-lg">
+            <div className="flex items-start space-x-3">
+              <Lock className="text-amber-400 mt-0.5 flex-shrink-0" size={20} />
+              <div className="flex-1">
+                <p className="text-amber-300 font-medium mb-1">Guest Mode - Limited Access</p>
+                <p className="text-amber-400 text-sm mb-2">
+                  You have access to {totalWordsInAllCategories} out of {totalActualWords} words 
+                  ({GUEST_LIMIT_PER_CATEGORY} per category). Log in to unlock all {totalActualWords} words and save your progress!
+                </p>
+                <button
+                  onClick={() => router.push('/auth/login')}
+                  className="flex items-center space-x-2 text-sm bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  <LogIn size={16} />
+                  <span>Unlock All Words</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Category Selector Component */}
         <CategorySelector
-          categories={categories}
+          categories={limitedCategories}
           selectedCategory={selectedCategory}
           setSelectedCategory={handleCategoryChange}
           learnedWords={learnedWords}
           viewMode={viewMode}
           setViewMode={setViewMode}
           user={user}
-            />
-            
-            
+          guestLimit={GUEST_LIMIT_PER_CATEGORY}
+        />
 
-        {/* Conditional Content (Quiz / Card View / Grid View) */}
+        {/* Conditional Content */}
         {showQuiz || quizScore.total > 0 ? (
           <QuizMode
             currentQuizWord={currentQuizWord}
@@ -320,15 +351,17 @@ const VocabularyPage = () => {
             }}
           />
         )}
-        
 
         {/* Stats Footer */}
         <div className="mt-6 bg-gray-800 rounded-xl p-6 border border-gray-700">
           <div className="flex items-center justify-between">
             <div className="text-center flex-1">
-              <p className="text-gray-400 text-sm">Total Words</p>
+              <p className="text-gray-400 text-sm">
+                {user ? 'Total Words' : 'Available Words'}
+              </p>
               <p className="text-2xl font-bold text-gray-200">
                 {totalWordsInAllCategories}
+                {!user && <Lock className="inline ml-1" size={16} />}
               </p>
             </div>
             <div className="text-center flex-1">
@@ -353,7 +386,6 @@ const VocabularyPage = () => {
       </div>
       )}
 
-      {/* Hidden audio element */}
       <audio ref={audioRef} className="hidden" />
     </div>
   );

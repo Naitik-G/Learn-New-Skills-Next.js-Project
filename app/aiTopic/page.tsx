@@ -4,7 +4,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { useTopicsData } from '@/hooks/useTopicsData';
 import { AISidebar } from '@/components/ai-topics/AISidebar';
 import { TopicContent } from '@/components/ai-topics/TopicContent';
-import { AIGenerationModal } from '@/components/ai-topics/AIGenerationModal';
+// import { AIGenerationModal } from '@/components/ai-topics/AIGenerationModal';
 import WordPopup from '@/components/DictionaryPopup';
 import { Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -81,7 +81,7 @@ export default function TopicsPage() {
       <div className="flex h-screen w-full bg-slate-950 text-slate-100" onMouseUp={handleTextSelection}>
         
         {/* Top Banner for non-authenticated users */}
-        {!user && (
+        {/* {!user && (
           <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-b border-yellow-500/30 backdrop-blur-sm">
             <div className="max-w-7xl mx-auto px-4 py-3">
               <div className="flex items-center justify-between">
@@ -105,7 +105,7 @@ export default function TopicsPage() {
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Sidebar (Navigation) */}
         <AISidebar
@@ -122,7 +122,7 @@ export default function TopicsPage() {
         />
 
         {/* Main Content Area */}
-        <div className={`flex-1 ${!user ? 'pt-16' : ''}`}>
+        <div className={`flex-1 ${!user ? 'pt-1' : ''}`}>
           <TopicContent
             topic={topic}
             user={user}
@@ -169,7 +169,7 @@ export default function TopicsPage() {
         )}
 
         {/* AI Generation Modal - Only show if user is logged in */}
-        {user && (
+        {/* {user && (
           <AIGenerationModal
             show={showAIModal}
             topic={conversationTopic}
@@ -182,7 +182,7 @@ export default function TopicsPage() {
             onClose={handleModalClose}
             getParticipantIcon={getParticipantIcon}
           />
-        )}
+        )} */}
         
         {/* Dictionary Popup (must remain high in the DOM for positioning) */}
         {selectedWord && popupPos && (

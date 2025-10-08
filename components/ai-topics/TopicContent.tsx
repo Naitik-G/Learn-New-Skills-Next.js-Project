@@ -46,7 +46,7 @@ export function TopicContent({
           </>
         )}
         <h1 className="text-lg font-bold text-slate-100 truncate">
-          {topic ? topic.title : 'Learning Topics'}
+          {topic ? topic.title : 'Learning '}
         </h1>
       </div>
     </div>
@@ -96,7 +96,7 @@ export function TopicContent({
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-950">
+    <div className="flex-1 flex flex-col bg-slate-950 ">
       <MobileHeader />
       
       {/* Content Area */}
@@ -112,11 +112,11 @@ export function TopicContent({
                 <h3 className="text-2xl font-bold text-slate-200">
                   Select a topic to start reading
                 </h3>
-                <p className="text-slate-400 leading-relaxed">
+                {/* <p className="text-slate-400 leading-relaxed">
                   Choose from the categories in the sidebar to explore different subjects
                   {user && ' or create custom AI-generated conversations'}
-                </p>
-                {user && (
+                </p> */}
+                {/* {user && (
                   <button
                     onClick={() => setShowAIModal(true)}
                     className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-lg font-medium transition-all duration-200 shadow-lg"
@@ -124,7 +124,7 @@ export function TopicContent({
                     <Sparkles size={20} />
                     Generate AI Conversation
                   </button>
-                )}
+                )} */}
               </div>
             </div>
           </div>

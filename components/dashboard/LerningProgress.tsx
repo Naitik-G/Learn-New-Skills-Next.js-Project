@@ -10,12 +10,26 @@ type LearningProgressProps = {
     categoriesCompleted: number;
     quizAverage: number;
   };
+  pronunciationStats?: {
+    totalAttempts: number;
+    averageAccuracy: number;
+    progressPercentage: number;
+  };
+  conversationStats?: {
+    totalConversations: number;
+    progressPercentage: number;
+  };
 };
 
-export function LearningProgress({ stats, vocabularyStats }: LearningProgressProps) {
-  const pronunciationProgress = Math.min(stats.pronunciationAttempts * 2, 100);
-  const conversationProgress = Math.min(stats.customConversations * 5, 100);
+export function LearningProgress({ 
+  stats, 
+  vocabularyStats,
+  pronunciationStats,
+  conversationStats 
+}: LearningProgressProps) {
   const vocabularyProgress = vocabularyStats?.progressPercentage || 0;
+  const pronunciationProgress = pronunciationStats?.progressPercentage || 0;
+  const conversationProgress = conversationStats?.progressPercentage || 0;
 
   return (
     <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 backdrop-blur-sm">
@@ -39,6 +53,11 @@ export function LearningProgress({ stats, vocabularyStats }: LearningProgressPro
               style={{ width: `${stats.averageScore}%` }}
             />
           </div>
+          <div className="flex items-center justify-between mt-1">
+            <span className="text-xs text-slate-500">
+              {stats.totalQuizzes} quizzes completed
+            </span>
+          </div>
         </div>
 
         {/* Vocabulary Learning */}
@@ -56,7 +75,7 @@ export function LearningProgress({ stats, vocabularyStats }: LearningProgressPro
             </div>
             <div className="flex items-center justify-between mt-1">
               <span className="text-xs text-slate-500">
-                {vocabularyStats.totalLearned}/40 words
+                {vocabularyStats.totalLearned}/200 words
               </span>
               {vocabularyStats.quizAverage > 0 && (
                 <span className="text-xs text-slate-500">
@@ -68,32 +87,51 @@ export function LearningProgress({ stats, vocabularyStats }: LearningProgressPro
         )}
 
         {/* Pronunciation Practice */}
-        <div>
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-slate-300">Pronunciation Practice</span>
-            <span className="text-green-400 font-medium">{pronunciationProgress}%</span>
+        {pronunciationStats && (
+          <div>
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-slate-300">Pronunciation Practice</span>
+              <span className="text-green-400 font-medium">{pronunciationProgress}%</span>
+            </div>
+            <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-500"
+                style={{ width: `${pronunciationProgress}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between mt-1">
+              <span className="text-xs text-slate-500">
+                {pronunciationStats.totalAttempts} attempts
+              </span>
+              {pronunciationStats.averageAccuracy > 0 && (
+                <span className="text-xs text-slate-500">
+                  Avg accuracy: {pronunciationStats.averageAccuracy}%
+                </span>
+              )}
+            </div>
           </div>
-          <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-500"
-              style={{ width: `${pronunciationProgress}%` }}
-            />
-          </div>
-        </div>
+        )}
 
         {/* Conversation Skills */}
-        <div>
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-slate-300">Conversation Skills</span>
-            <span className="text-blue-400 font-medium">{conversationProgress}%</span>
+        {conversationStats && (
+          <div>
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-slate-300">Conversation Skills</span>
+              <span className="text-blue-400 font-medium">{conversationProgress}%</span>
+            </div>
+            <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-500"
+                style={{ width: `${conversationProgress}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between mt-1">
+              <span className="text-xs text-slate-500">
+                {conversationStats.totalConversations} conversations
+              </span>
+            </div>
           </div>
-          <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-500"
-              style={{ width: `${conversationProgress}%` }}
-            />
-          </div>
-        </div>
+        )}
 
         {/* Total Learning Time */}
         <div className="pt-4 mt-4 border-t border-slate-700">

@@ -3,8 +3,23 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { createClient } from "@/lib/supabase/client";
-import { UserStats, QuizResult, StatCardProps, LearningModuleProps } from "@/components/types";
-import { Award, Mic, MessageCircle, Target, Zap, Clock, LucideIcon, Music, BookOpen } from "lucide-react";
+import {
+  UserStats,
+  QuizResult,
+  StatCardProps,
+  LearningModuleProps,
+} from "@/components/types";
+import {
+  Award,
+  Mic,
+  MessageCircle,
+  Target,
+  Zap,
+  Clock,
+  LucideIcon,
+  Music,
+  BookOpen,
+} from "lucide-react";
 
 const INITIAL_STATS: UserStats = {
   totalQuizzes: 0,
@@ -12,7 +27,7 @@ const INITIAL_STATS: UserStats = {
   pronunciationAttempts: 0,
   customConversations: 0,
   streak: 0,
-  totalLearningTime: 0
+  totalLearningTime: 0,
 };
 
 export const useDashboardData = () => {
@@ -27,7 +42,16 @@ export const useDashboardData = () => {
     totalLearned: 0,
     progressPercentage: 0,
     categoriesCompleted: 0,
-    quizAverage: 0
+    quizAverage: 0,
+  });
+  const [pronunciationStats, setPronunciationStats] = useState({
+    totalAttempts: 0,
+    averageAccuracy: 0,
+    progressPercentage: 0,
+  });
+  const [conversationStats, setConversationStats] = useState({
+    totalConversations: 0,
+    progressPercentage: 0,
   });
 
   // --- Data Fetching Functions ---
@@ -58,14 +82,24 @@ export const useDashboardData = () => {
         .eq("user_id", user.id);
 
       // Fetch other counts
-      const [{ count: pronunciationCount }, { count: conversationCount }] = await Promise.all([
-        supabase.from("pronunciation_attempts").select("*", { count: 'exact', head: true }).eq("user_id", user.id),
-        supabase.from("custom_conversations").select("*", { count: 'exact', head: true }).eq("user_id", user.id)
-      ]);
+      const [{ count: pronunciationCount }, { count: conversationCount }] =
+        await Promise.all([
+          supabase
+            .from("pronunciation_attempts")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", user.id),
+          supabase
+            .from("custom_conversations")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", user.id),
+        ]);
 
       const totalQuizzes = quizData?.length || 0;
-      const averageScore = quizData?.length 
-        ? (quizData.reduce((sum, q) => sum + (q.score / q.total_questions * 100), 0) / quizData.length)
+      const averageScore = quizData?.length
+        ? quizData.reduce(
+            (sum, q) => sum + (q.score / q.total_questions) * 100,
+            0
+          ) / quizData.length
         : 0;
 
       setStats({
@@ -74,7 +108,9 @@ export const useDashboardData = () => {
         pronunciationAttempts: pronunciationCount || 0,
         customConversations: conversationCount || 0,
         streak: 7, // Placeholder logic
-        totalLearningTime: Math.round((totalQuizzes * 5 + (pronunciationCount || 0) * 2) / 60) // Estimated hours
+        totalLearningTime: Math.round(
+          (totalQuizzes * 5 + (pronunciationCount || 0) * 2 + (conversationCount || 0) * 3) / 60
+        ),
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -86,42 +122,107 @@ export const useDashboardData = () => {
     try {
       // Fetch vocabulary progress
       const { data: vocabData, error: vocabError } = await supabase
-        .from('vocabulary_progress')
-        .select('*')
-        .eq('user_id', user.id);
+        .from("vocabulary_progress")
+        .select("*")
+        .eq("user_id", user.id);
 
       if (vocabError) throw vocabError;
 
       // Fetch vocabulary quiz results
       const { data: vocabQuizData, error: vocabQuizError } = await supabase
-        .from('vocabulary_quiz_results')
-        .select('percentage')
-        .eq('user_id', user.id);
+        .from("vocabulary_quiz_results")
+        .select("percentage")
+        .eq("user_id", user.id);
 
       if (vocabQuizError) throw vocabQuizError;
 
       // Calculate vocabulary stats
-      const totalWords = 40; // Total vocabulary words across all categories
+      const totalWords = 200; // Updated total: 40 words per category × 5 categories
       const totalLearned = vocabData?.length || 0;
       const progressPercentage = Math.round((totalLearned / totalWords) * 100);
-      
+
       // Count categories with at least one learned word
-      const categories = new Set(vocabData?.map(item => item.category) || []);
+      const categories = new Set(vocabData?.map((item) => item.category) || []);
       const categoriesCompleted = categories.size;
 
       // Calculate average quiz score
-      const quizAverage = vocabQuizData && vocabQuizData.length > 0
-        ? Math.round(vocabQuizData.reduce((sum, q) => sum + q.percentage, 0) / vocabQuizData.length)
-        : 0;
+      const quizAverage =
+        vocabQuizData && vocabQuizData.length > 0
+          ? Math.round(
+              vocabQuizData.reduce((sum, q) => sum + q.percentage, 0) /
+                vocabQuizData.length
+            )
+          : 0;
 
       setVocabularyStats({
         totalLearned,
         progressPercentage,
         categoriesCompleted,
-        quizAverage
+        quizAverage,
       });
     } catch (error) {
       console.error("Error fetching vocabulary stats:", error);
+    }
+  }, [user, supabase]);
+
+  const fetchPronunciationStats = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { data: pronunciationData, error } = await supabase
+        .from("pronunciation_attempts")
+        .select("accuracy")
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      const totalAttempts = pronunciationData?.length || 0;
+      
+      // Calculate average accuracy from all attempts
+      let averageAccuracy = 0;
+      if (totalAttempts > 0) {
+        const totalAccuracy = pronunciationData.reduce((sum, attempt) => {
+          // accuracy is an array of word accuracies
+          const attemptAvg = Array.isArray(attempt.accuracy)
+            ? attempt.accuracy.reduce((a, b) => a + b, 0) / attempt.accuracy.length
+            : 0;
+          return sum + attemptAvg;
+        }, 0);
+        averageAccuracy = Math.round((totalAccuracy / totalAttempts) * 100);
+      }
+
+      // Progress based on number of attempts (cap at 50 attempts = 100%)
+      const progressPercentage = Math.min((totalAttempts / 50) * 100, 100);
+
+      setPronunciationStats({
+        totalAttempts,
+        averageAccuracy,
+        progressPercentage: Math.round(progressPercentage),
+      });
+    } catch (error) {
+      console.error("Error fetching pronunciation stats:", error);
+    }
+  }, [user, supabase]);
+
+  const fetchConversationStats = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { count, error } = await supabase
+        .from("custom_conversations")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      const totalConversations = count || 0;
+      // Progress based on number of conversations (cap at 20 conversations = 100%)
+      const progressPercentage = Math.min((totalConversations / 20) * 100, 100);
+
+      setConversationStats({
+        totalConversations,
+        progressPercentage: Math.round(progressPercentage),
+      });
+    } catch (error) {
+      console.error("Error fetching conversation stats:", error);
     }
   }, [user, supabase]);
 
@@ -132,11 +233,26 @@ export const useDashboardData = () => {
       router.push("/login");
     } else if (user) {
       setLoadingData(true);
-      Promise.all([fetchResults(), fetchUserStats(), fetchVocabularyStats()]).finally(() => {
+      Promise.all([
+        fetchResults(),
+        fetchUserStats(),
+        fetchVocabularyStats(),
+        fetchPronunciationStats(),
+        fetchConversationStats(),
+      ]).finally(() => {
         setLoadingData(false);
       });
     }
-  }, [user, loadingAuth, router, fetchResults, fetchUserStats, fetchVocabularyStats]);
+  }, [
+    user,
+    loadingAuth,
+    router,
+    fetchResults,
+    fetchUserStats,
+    fetchVocabularyStats,
+    fetchPronunciationStats,
+    fetchConversationStats,
+  ]);
 
   const handleLogout = useCallback(async () => {
     await supabase.auth.signOut();
@@ -145,25 +261,109 @@ export const useDashboardData = () => {
 
   // --- Memoized UI Data ---
 
-  const statCards: StatCardProps[] = useMemo(() => [
-    { label: "Total Quizzes", value: stats.totalQuizzes, icon: Award, color: "text-purple-400", bgColor: "bg-purple-500/10" },
-    { label: "Avg Score", value: `${stats.averageScore}%`, icon: Target, color: "text-green-400", bgColor: "bg-green-500/10" },
-    { label: "Pronunciation", value: stats.pronunciationAttempts, icon: Mic, color: "text-blue-400", bgColor: "bg-blue-500/10" },
-    { label: "Conversations", value: stats.customConversations, icon: MessageCircle, color: "text-pink-400", bgColor: "bg-pink-500/10" },
-    { label: "Day Streak", value: stats.streak, icon: Zap, color: "text-yellow-400", bgColor: "bg-yellow-500/10" },
-    { label: "Learning Hours", value: stats.totalLearningTime, icon: Clock, color: "text-cyan-400", bgColor: "bg-cyan-500/10" },
-    { label: "Words Learned", value: vocabularyStats.totalLearned, icon: BookOpen, color: "text-orange-400", bgColor: "bg-orange-500/10" },
-    { label: "Categories", value: `${vocabularyStats.categoriesCompleted}/5`, icon: BookOpen, color: "text-teal-400", bgColor: "bg-teal-500/10" }
-  ], [stats, vocabularyStats]);
+  const statCards: StatCardProps[] = useMemo(
+    () => [
+      {
+        label: "Total Quizzes",
+        value: stats.totalQuizzes,
+        icon: Award,
+        color: "text-purple-400",
+        bgColor: "bg-purple-500/10",
+      },
+      {
+        label: "Avg Score",
+        value: `${stats.averageScore}%`,
+        icon: Target,
+        color: "text-green-400",
+        bgColor: "bg-green-500/10",
+      },
+      {
+        label: "Pronunciation",
+        value: stats.pronunciationAttempts,
+        icon: Mic,
+        color: "text-blue-400",
+        bgColor: "bg-blue-500/10",
+      },
+      {
+        label: "Conversations",
+        value: stats.customConversations,
+        icon: MessageCircle,
+        color: "text-pink-400",
+        bgColor: "bg-pink-500/10",
+      },
+      {
+        label: "Day Streak",
+        value: stats.streak,
+        icon: Zap,
+        color: "text-yellow-400",
+        bgColor: "bg-yellow-500/10",
+      },
+      {
+        label: "Learning Hours",
+        value: stats.totalLearningTime,
+        icon: Clock,
+        color: "text-cyan-400",
+        bgColor: "bg-cyan-500/10",
+      },
+      {
+        label: "Words Learned",
+        value: vocabularyStats.totalLearned,
+        icon: BookOpen,
+        color: "text-orange-400",
+        bgColor: "bg-orange-500/10",
+      },
+      {
+        label: "Categories",
+        value: `${vocabularyStats.categoriesCompleted}/5`,
+        icon: BookOpen,
+        color: "text-teal-400",
+        bgColor: "bg-teal-500/10",
+      },
+    ],
+    [stats, vocabularyStats]
+  );
 
-  const learningModules: LearningModuleProps[] = useMemo(() => [
-    { title: "AI Topics & Conversations", description: "Explore diverse topics and generate custom AI conversations", icon: MessageCircle as LucideIcon, path: "/dashboard/aiTopic", color: "from-purple-500 to-pink-500", bgColor: "bg-purple-500/10", borderColor: "border-purple-500/20" },
-    { title: "Pronunciation Practice", description: "Improve your speaking with AI-powered feedback", icon: Mic as LucideIcon, path: "/dashboard/pronunciation", color: "from-green-500 to-emerald-500", bgColor: "bg-green-500/10", borderColor: "border-green-500/20" },
-    { title: "Custom Sentences", description: "Practice with your own AI-generated sentences", icon: Zap as LucideIcon, path: "/dashboard/custom-sentences", color: "from-blue-500 to-cyan-500", bgColor: "bg-blue-500/10", borderColor: "border-blue-500/20" },
-    { title: "Quiz Master", description: "Test your knowledge with interactive quizzes", icon: Award as LucideIcon, path: "/dashboard/quiz", color: "from-orange-500 to-red-500", bgColor: "bg-orange-500/10", borderColor: "border-orange-500/20" },
-    { title: "Karaoke Learning", description: "Learn through music and sing-along practice", icon: Music as LucideIcon, path: "/dashboard/karaoke", color: "from-indigo-500 to-violet-500", bgColor: "bg-indigo-500/10", borderColor: "border-indigo-500/20" },
-    { title: "Vocabulary Builder", description: "Learn fruits, foods, dishes, and more with interactive quizzes", icon: BookOpen as LucideIcon, path: "/dashboard/vocabulary", color: "from-orange-500 to-amber-500", bgColor: "bg-orange-500/10", borderColor: "border-orange-500/20" }
-  ], []);
+  const learningModules: LearningModuleProps[] = useMemo(
+    () => [
+      {
+        title: "Conversations",
+        description: "Explore diverse topics and generate custom AI conversations",
+        icon: MessageCircle as LucideIcon,
+        path: "/aiTopic",
+        color: "from-purple-500 to-pink-500",
+        bgColor: "bg-purple-500/10",
+        borderColor: "border-purple-500/20",
+      },
+      {
+        title: "Pronunciation Practice",
+        description: "Improve your speaking with AI-powered feedback",
+        icon: Mic as LucideIcon,
+        path: "/pronunciation",
+        color: "from-green-500 to-emerald-500",
+        bgColor: "bg-green-500/10",
+        borderColor: "border-green-500/20",
+      },
+      {
+        title: "Quiz Master",
+        description: "Test your knowledge with interactive quizzes",
+        icon: Award as LucideIcon,
+        path: "/quiz",
+        color: "from-orange-500 to-red-500",
+        bgColor: "bg-orange-500/10",
+        borderColor: "border-orange-500/20",
+      },
+      {
+        title: "Vocabulary Builder",
+        description: "Learn fruits, foods, dishes, and more with interactive quizzes",
+        icon: BookOpen as LucideIcon,
+        path: "/vocabulary",
+        color: "from-orange-500 to-amber-500",
+        bgColor: "bg-orange-500/10",
+        borderColor: "border-orange-500/20",
+      },
+    ],
+    []
+  );
 
   return {
     user,
@@ -173,6 +373,8 @@ export const useDashboardData = () => {
     handleLogout,
     statCards,
     learningModules,
-    vocabularyStats
+    vocabularyStats,
+    pronunciationStats,
+    conversationStats,
   };
 };

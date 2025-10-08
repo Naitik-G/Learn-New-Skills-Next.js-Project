@@ -27,20 +27,27 @@ const QuizMode: React.FC<QuizModeProps> = ({
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [displayedWord, setDisplayedWord] = useState<VocabularyItem | null>(currentQuizWord);
   const [displayedOptions, setDisplayedOptions] = useState<string[]>(quizOptions);
+  const [localScore, setLocalScore] = useState<QuizScore>(quizScore);
 
-  const isQuizFinished = quizScore.total >= 5;
+  const isQuizFinished = localScore.total >= 5;
 
-  // Update displayed content and reset states when new question arrives
+  // Initialize display on mount
   useEffect(() => {
-    if (currentQuizWord && quizOptions.length > 0 && !selectedAnswer) {
+    if (currentQuizWord && quizOptions.length > 0) {
       setDisplayedWord(currentQuizWord);
       setDisplayedOptions(quizOptions);
     }
-  }, [currentQuizWord, quizOptions, selectedAnswer]);
+  }, [currentQuizWord, quizOptions]);
 
-  // Reset answer states when moving to next question
+  // Sync local score with parent score
   useEffect(() => {
-    if (currentQuizWord && displayedWord && currentQuizWord.word !== displayedWord.word) {
+    setLocalScore(quizScore);
+  }, [quizScore]);
+
+  // Reset states when new question arrives (detected by word change)
+  useEffect(() => {
+    if (currentQuizWord && displayedWord && 
+        currentQuizWord.word !== displayedWord.word) {
       setSelectedAnswer(null);
       setIsCorrect(null);
       setDisplayedWord(currentQuizWord);
@@ -55,20 +62,26 @@ const QuizMode: React.FC<QuizModeProps> = ({
     setSelectedAnswer(option);
     setIsCorrect(correct);
 
-    // Immediately call parent handler
+    // Update local score immediately for display
+    setLocalScore({
+      correct: localScore.correct + (correct ? 1 : 0),
+      total: localScore.total + 1
+    });
+
+    // Call parent handler
     handleQuizAnswer(option);
   };
 
   // --- Quiz Finished View ---
-  if (isQuizFinished && !displayedWord) {
-    const percentage = Math.round((quizScore.correct / quizScore.total) * 100);
+  if (isQuizFinished) {
+    const percentage = Math.round((localScore.correct / localScore.total) * 100);
     
     return (
       <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-700 text-center">
         <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
         <h2 className="text-3xl font-bold text-gray-100 mb-4">Quiz Complete!</h2>
         <p className="text-2xl text-indigo-400 mb-2">
-          Your Score: {quizScore.correct}/{quizScore.total}
+          Your Score: {localScore.correct}/{localScore.total}
         </p>
         <p className="text-lg text-gray-400 mb-6">
           {percentage}% Correct
@@ -103,7 +116,7 @@ const QuizMode: React.FC<QuizModeProps> = ({
       <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-700 transition-all duration-300">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-gray-100 mb-2">Quiz Time!</h2>
-          <p className="text-gray-400">Question {quizScore.total + 1} of 5</p>
+          <p className="text-gray-400">Question {localScore.total + 1} of 5</p>
           
           <div className={`mt-4 text-6xl transition-transform duration-500 ${
             selectedAnswer ? 'scale-110' : 'scale-100'
@@ -151,7 +164,7 @@ const QuizMode: React.FC<QuizModeProps> = ({
 
         <div className="mt-6 text-center">
           <p className="text-gray-400">
-            Score: <span className="text-indigo-400 font-bold">{quizScore.correct}/{quizScore.total}</span>
+            Score: <span className="text-indigo-400 font-bold">{localScore.correct}/{localScore.total}</span>
           </p>
         </div>
 

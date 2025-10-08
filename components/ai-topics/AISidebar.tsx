@@ -31,14 +31,14 @@ export function AISidebar({
     <Sidebar className="border-r border-slate-800 bg-slate-900">
       <SidebarHeader className="border-b border-slate-800 px-4 py-4 bg-slate-900/50">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
               <BookOpen className="h-5 w-5 text-white" />
             </div>
             <h2 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
               Topics
             </h2>
-          </div>
+          </div> */}
           
           {/* AI Generation Button - Only for authenticated users */}
           {user && (

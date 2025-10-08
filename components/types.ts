@@ -118,12 +118,12 @@ export const categories: Record<string, CategoryConfig> = {
     color: 'text-blue-400 group-hover:text-blue-300',
     bgColor: 'hover:bg-blue-500/10'
   },
-  custom: {
-    name: 'Custom Conversations',
-    icon: MessageCircle,
-    color: 'text-purple-400 group-hover:text-purple-300',
-    bgColor: 'hover:bg-purple-500/10'
-  }
+  // custom: {
+  //   name: 'Custom Conversations',
+  //   icon: MessageCircle,
+  //   color: 'text-purple-400 group-hover:text-purple-300',
+  //   bgColor: 'hover:bg-purple-500/10'
+  // }
 };
 
 export type Level = 'beginner' | 'intermediate' | 'advanced' | 'custom';
