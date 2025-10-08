@@ -1,11 +1,11 @@
 // app/dashboard/page.tsx
 "use client";
-import { useDashboardData } from "@/hooks/useDashboardData";
 import { LoadingState } from "@/components/dashboard/LoadingStats";
 import { StatCardGrid } from "@/components/dashboard/StatsMCardGrid";
 import { LearningModules } from "@/components/dashboard/LearningModules";
 import { RecentQuizResults } from "@/components/dashboard/RecentQuizResult";
 import { LearningProgress } from "@/components/dashboard/LerningProgress";
+import { useDashboardData } from "@/hooks/useDashboardData";
 
 export default function Dashboard() {
   const { 
