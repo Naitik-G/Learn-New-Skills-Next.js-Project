@@ -17,7 +17,7 @@ const publicNavLinks = [
 
 const authenticatedNavLinks = [
   { label: 'Vocabulary', href: '/vocabulary', icon: BookOpen },
-  { label: 'AI Topics', href: '/aiTopic', icon: BookOpen },
+  { label: 'Topics', href: '/aiTopic', icon: BookOpen },
   { label: 'Pronunciation', href: '/pronunciation', icon: BookOpen },
   { label: 'Quiz', href: '/quiz', icon: BookOpen },
 ]
