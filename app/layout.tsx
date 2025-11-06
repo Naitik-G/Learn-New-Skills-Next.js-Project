@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     siteName: "LearnHub",
     images: [
       {
-        url: "/banner.png", // Create this image (1200x630px recommended)
+        url: "banner.png", // Create this image (1200x630px recommended)
         width: 1200,
         height: 630,
         alt: "LearnHub - Interactive Language Learning Platform",
@@ -129,7 +129,7 @@ export default function RootLayout({
               "@type": "Organization",
               name: "LearnHub",
               url: "https://learnhub.com",
-              logo: "https://learnhub.com/logo.png",
+              logo: "/logo.png",
               description: "AI-powered interactive language learning platform",
               sameAs: [
                 "https://twitter.com/learnhub",
@@ -169,7 +169,7 @@ export default function RootLayout({
               name: "LearnHub",
               description: "Interactive platform for learning English with AI-powered tools",
               url: "https://learnhub.com",
-              logo: "https://learnhub.com/logo.png",
+              logo: "/logo.png",
               offers: {
                 "@type": "Offer",
                 category: "Education",
