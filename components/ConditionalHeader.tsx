@@ -8,8 +8,8 @@ export default function ConditionalHeader() {
   const pathname = usePathname()
   
   // Don't show header on auth pages
-  const hideHeader = pathname?.startsWith('/login') || 
-                     pathname?.startsWith('/register') || 
+  const hideHeader = pathname?.startsWith('/auth/login') || 
+                     pathname?.startsWith('/auth/register') || 
                      pathname?.startsWith('/auth/')
   
   if (hideHeader) return null

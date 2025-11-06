@@ -7,6 +7,7 @@ import {
   Calculator, Palette,
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const LandingPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -193,7 +194,7 @@ const LandingPage = () => {
 
 
           <h1 className="text-5xl md:text-7xl font-bold mb-6">
-            Master English
+            Master Skills
 
           </h1>
 
@@ -209,9 +210,6 @@ const LandingPage = () => {
                 <ArrowRight size={20} />
               </button>
             </Link>
-            <button className="px-8 py-4 bg-slate-800 hover:bg-slate-700 rounded-lg font-medium text-lg transition-all border border-slate-700">
-              Watch Demo
-            </button>
           </div>
 
           {/* Stats */}
@@ -424,12 +422,21 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <BookOpen className="w-5 h-5" />
-                </div>
-                <span className="text-lg font-bold">LearnHub</span>
+              <Link href="/" className="flex items-center space-x-2">
+              <div className="w-10 h-10 relative">
+                <Image
+                  src="/logo.png"
+                  alt="LearnHub Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
               </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                LearnHub
+              </span>
+            </Link>
               <p className="text-slate-400 text-sm">
                 Empowering learners worldwide with AI-powered education
               </p>
