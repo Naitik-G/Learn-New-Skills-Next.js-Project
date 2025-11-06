@@ -1,10 +1,10 @@
 "use client"
 
 import React, { useState } from 'react';
-import { 
-  BookOpen, Mic, MessageCircle, Brain, Trophy, Globe, 
+import {
+  BookOpen, Mic, MessageCircle, Brain, Trophy, Globe,
   ArrowRight, Check, Star, Users, Zap, Target, Clock,
-  Calculator, Palette, 
+  Calculator, Palette,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -24,15 +24,15 @@ const LandingPage = () => {
       title: "Pronunciation Practice",
       description: "AI-powered speech recognition with real-time feedback and phonetics",
       color: "from-green-500 to-emerald-500",
-      path: "/custom-sentences"
+      path: "/prounciation"
     },
-    {
-      icon: MessageCircle,
-      title: "AI Conversations",
-      description: "Generate custom dialogues on any topic with multiple participants",
-      color: "from-purple-500 to-pink-500",
-      path: "/aiPartner"
-    },
+    // {
+    //   icon: MessageCircle,
+    //   title: "AI Conversations",
+    //   description: "Generate custom dialogues on any topic with multiple participants",
+    //   color: "from-purple-500 to-pink-500",
+    //   path: "/aiPartner"
+    // },
     {
       icon: Brain,
       title: "Vocabulary Builder",
@@ -108,9 +108,9 @@ const LandingPage = () => {
   ];
 
   const stats = [
-    { label: "Active Learners", value: "10,000+", icon: Users },
-    { label: "Learning Hours", value: "50,000+", icon: Clock },
-    { label: "Topics Available", value: "500+", icon: BookOpen },
+    { label: "Active Learners", value: "10+", icon: Users },
+    { label: "Learning Hours", value: "50+", icon: Clock },
+    { label: "Topics Available", value: "4+", icon: BookOpen },
     { label: "Success Rate", value: "94%", icon: Trophy }
   ];
 
@@ -186,28 +186,22 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      {/* Navigation */}
-     
+
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4">
         <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-300 text-sm mb-8">
-            <Zap size={16} />
-            <span>AI-Powered Learning Platform</span>
-          </div>
-          
+
+
           <h1 className="text-5xl md:text-7xl font-bold mb-6">
-            Master English &
-            <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              Beyond with AI
-            </span>
+            Master English
+
           </h1>
-          
+
           <p className="text-xl text-slate-400 mb-8 max-w-3xl mx-auto">
-            Learn English through interactive reading, AI-powered pronunciation practice, and custom conversations. 
+            Learn English through interactive reading,  and custom conversations.
             Expand your skills with math, science, and more - all in one platform.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link href="/register">
               <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-medium text-lg flex items-center justify-center gap-2 transition-all shadow-lg shadow-purple-500/25">
@@ -287,7 +281,7 @@ const LandingPage = () => {
             {additionalServices.map((service, index) => {
               const Icon = service.icon;
               return (
-                <div 
+                <div
                   key={index}
                   className="p-8 bg-slate-800/50 border border-slate-700 rounded-xl"
                 >
@@ -313,7 +307,7 @@ const LandingPage = () => {
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="py-20 px-4 bg-slate-900/50">
+      {/* <section id="testimonials" className="py-20 px-4 bg-slate-900/50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -326,7 +320,7 @@ const LandingPage = () => {
 
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <div 
+              <div
                 key={index}
                 className="p-6 bg-slate-800/50 border border-slate-700 rounded-xl"
               >
@@ -344,10 +338,10 @@ const LandingPage = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Pricing */}
-      <section id="pricing" className="py-20 px-4">
+      {/* <section id="pricing" className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -360,20 +354,19 @@ const LandingPage = () => {
 
           <div className="grid md:grid-cols-3 gap-8">
             {pricingPlans.map((plan, index) => (
-              <div 
+              <div
                 key={index}
-                className={`p-8 rounded-xl ${
-                  plan.popular 
-                    ? 'bg-gradient-to-br from-blue-600/20 to-purple-600/20 border-2 border-purple-500' 
+                className={`p-8 rounded-xl ${plan.popular
+                    ? 'bg-gradient-to-br from-blue-600/20 to-purple-600/20 border-2 border-purple-500'
                     : 'bg-slate-800/50 border border-slate-700'
-                } relative`}
+                  } relative`}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full text-sm font-medium">
                     Most Popular
                   </div>
                 )}
-                
+
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
                   <div className="text-4xl font-bold mb-2">
@@ -393,11 +386,10 @@ const LandingPage = () => {
                 </ul>
 
                 <Link href="/register">
-                  <button className={`w-full py-3 rounded-lg font-medium transition-all ${
-                    plan.popular
+                  <button className={`w-full py-3 rounded-lg font-medium transition-all ${plan.popular
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500'
                       : 'bg-slate-700 hover:bg-slate-600'
-                  }`}>
+                    }`}>
                     {plan.cta}
                   </button>
                 </Link>
@@ -405,7 +397,7 @@ const LandingPage = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className="py-20 px-4">
@@ -442,7 +434,7 @@ const LandingPage = () => {
                 Empowering learners worldwide with AI-powered education
               </p>
             </div>
-            
+
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-slate-400 text-sm">
@@ -452,7 +444,7 @@ const LandingPage = () => {
                 <li><a href="#" className="hover:text-white">Roadmap</a></li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-slate-400 text-sm">
@@ -462,7 +454,7 @@ const LandingPage = () => {
                 <li><a href="#" className="hover:text-white">Contact</a></li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-slate-400 text-sm">
@@ -472,7 +464,7 @@ const LandingPage = () => {
               </ul>
             </div>
           </div>
-          
+
           <div className="pt-8 border-t border-slate-800 text-center text-slate-400 text-sm">
             © 2024 LearnHub. All rights reserved.
           </div>

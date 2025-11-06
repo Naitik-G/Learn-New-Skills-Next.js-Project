@@ -300,21 +300,22 @@ export function TopicContent({
 
   // Mobile Header
   const MobileHeader = () => (
-    <div className="border-b border-slate-800 px-3 sm:px-6 py-3 sm:py-4 flex items-center gap-2 sm:gap-3 bg-slate-900/30 backdrop-blur-sm">
-      <UISidebarTrigger className="text-slate-400 hover:text-white hover:bg-slate-700/50 p-1.5 sm:p-2 rounded-md transition-colors" />
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+    <div className="border-b border-slate-800 px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 flex items-center gap-1.5 sm:gap-2 md:gap-3 bg-slate-900/30 backdrop-blur-sm sticky top-0 z-10">
+      <UISidebarTrigger className="text-slate-400 hover:text-white hover:bg-slate-700/50 p-1.5 sm:p-2 rounded-md transition-colors shrink-0" />
+      <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0 flex-1 overflow-hidden">
         {topic && (
           <>
-            <div className="w-1 h-4 sm:h-6 bg-gradient-to-b from-blue-400 to-purple-500 rounded-full flex-shrink-0" />
+            <div className="w-1 h-4 sm:h-5 md:h-6 bg-gradient-to-b from-blue-400 to-purple-500 rounded-full flex-shrink-0" />
             {topic.isCustom && (
-              <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-purple-600/20 border border-purple-500/30 rounded-full text-xs text-purple-300">
-                <Sparkles size={12} />
-                <span>AI Generated</span>
+              <div className="hidden sm:flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-purple-600/20 border border-purple-500/30 rounded-full text-[10px] sm:text-xs text-purple-300 shrink-0">
+                <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                <span className="hidden md:inline">AI Generated</span>
+                <span className="md:hidden">AI</span>
               </div>
             )}
           </>
         )}
-        <h1 className="text-sm sm:text-lg font-bold text-slate-100 truncate">
+        <h1 className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-slate-100 truncate">
           {topic ? topic.title : 'Learning'}
         </h1>
       </div>
@@ -326,20 +327,22 @@ export function TopicContent({
     if (!hasMultipleScenes) return null;
 
     return (
-      <div className="mb-4 sm:mb-6">
-        <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-3">
-          <h3 className="text-xs sm:text-sm font-semibold text-slate-400 uppercase tracking-wide">
+      <div className="mb-3 sm:mb-4 md:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 mb-2 sm:mb-3">
+          <h3 className="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-400 uppercase tracking-wide shrink-0">
             Scenes
           </h3>
           <div className="h-px flex-1 bg-slate-700/50"></div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {availableScenes.map((scene) => (
             <button
               key={scene.key}
               onClick={() => switchScene(scene.key)}
               className={`
-                px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border
+                px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-md sm:rounded-lg 
+                text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-200 border
+                max-w-full truncate
                 ${currentScene === scene.key
                   ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 text-blue-300 shadow-lg shadow-blue-500/10'
                   : 'bg-slate-800/30 border-slate-600/30 text-slate-400 hover:bg-slate-700/50 hover:border-slate-500/50 hover:text-slate-200'
@@ -353,8 +356,8 @@ export function TopicContent({
         
         {/* Current Scene Setting */}
         {currentScene && (
-          <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-slate-800/20 border border-slate-700/30 rounded-lg">
-            <p className="text-xs text-slate-400">
+          <div className="mt-2 sm:mt-3 p-2 sm:p-2.5 md:p-3 bg-slate-800/20 border border-slate-700/30 rounded-lg overflow-hidden">
+            <p className="text-[10px] sm:text-xs text-slate-400 leading-relaxed break-words">
               <span className="font-medium text-slate-300">Setting:</span>{' '}
               {availableScenes.find(s => s.key === currentScene)?.setting}
             </p>
@@ -365,58 +368,57 @@ export function TopicContent({
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-950 min-h-0">
+    <div className="flex-1 flex flex-col bg-slate-950 min-h-0 h-full w-full  overflow-x-scroll">
       <MobileHeader />
       
       {/* Content Area */}
-      <div className="flex-1 p-3 sm:p-6 md:p-8 overflow-y-auto relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="flex-1 p-2 sm:p-3 md:p-4 lg:p-6 xl:p-8 overflow-y-auto overflow-x-hidden relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 w-full">
         {!topic ? (
-          <div className="flex items-center justify-center h-full px-4">
-            <div className="text-center space-y-4 sm:space-y-6 max-w-md">
+          <div className="flex items-center justify-center h-full px-3 sm:px-4">
+            <div className="text-center space-y-3 sm:space-y-4 md:space-y-6 max-w-xs sm:max-w-sm md:max-w-md">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur-2xl opacity-20 animate-pulse" />
-                <BookOpen className="h-12 w-12 sm:h-16 md:h-20 sm:w-16 md:w-20 text-slate-400 mx-auto relative z-10" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur-xl sm:blur-2xl opacity-20 animate-pulse" />
+                <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16 lg:h-20 lg:w-20 text-slate-400 mx-auto relative z-10" />
               </div>
-              <div className="space-y-2 sm:space-y-3">
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-200">
+              <div className="space-y-1.5 sm:space-y-2 md:space-y-3">
+                <h3 className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold text-slate-200 px-2">
                   Select a topic to start reading
                 </h3>
-                <p className="text-sm sm:text-base text-slate-400 leading-relaxed hidden sm:block">
+                <p className="text-xs sm:text-sm md:text-base text-slate-400 leading-relaxed hidden sm:block px-2">
                   Choose from the categories in the sidebar to explore different subjects
                 </p>
               </div>
             </div>
           </div>
         ) : (
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto w-full ">
             {/* Topic Header */}
-            <div className="mb-4 sm:mb-6 md:mb-8 relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur opacity-20" />
-              <div className="relative bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-lg p-3 sm:p-4 md:p-6">
-                <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-0">
-                  <div className="flex-1 w-full sm:w-auto">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent break-words">
+            <div className="mb-3 sm:mb-4 md:mb-6 lg:mb-8 relative w-full ">
+              <div className="absolute -inset-0.5 sm:-inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur opacity-20" />
+              <div className="relative bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2.5 sm:p-3 md:p-4 lg:p-6 overflow-x-auto">
+                <div className="flex flex-col gap-2 sm:gap-3 md:gap-4">
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold mb-1.5 sm:mb-2 md:mb-3 bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent break-words leading-tight overflow-x-auto">
                       {topic.title}
                     </h1>
                     {topic.summary && (
-                      <p className="text-sm sm:text-base text-slate-300 mb-3 sm:mb-4 leading-relaxed">
+                      <p className="text-[11px] sm:text-xs md:text-sm lg:text-base text-slate-300 mb-2 sm:mb-3 leading-relaxed break-words overflow-x-auto">
                         {topic.summary}
                       </p>
                     )}
-                    <div className="flex items-center gap-2">
-                      <div className="h-1 w-16 sm:w-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full" />
-                      <div className="h-1 w-6 sm:w-8 bg-gradient-to-r from-purple-500 to-emerald-500 rounded-full" />
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <div className="h-0.5 sm:h-1 w-10 sm:w-16 md:w-20 lg:w-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full" />
+                      <div className="h-0.5 sm:h-1 w-4 sm:w-6 md:w-8 bg-gradient-to-r from-purple-500 to-emerald-500 rounded-full" />
                     </div>
                   </div>
                   
                   {topic.isCustom && topic.participants && (
-                    <div className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-slate-800/50 border border-slate-600/30 rounded-lg shrink-0 self-start sm:self-auto">
+                    <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-1 sm:py-1.5 md:py-2 bg-slate-800/50 border border-slate-600/30 rounded-lg self-start">
                       {React.createElement(getParticipantIcon(topic.participants), {
-                        size: 14,
-                        className: "text-slate-400 sm:w-4 sm:h-4"
+                        className: "text-slate-400 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4"
                       })}
-                      <span className="text-xs sm:text-sm text-slate-300 whitespace-nowrap">
-                        {topic.participants} participants
+                      <span className="text-[10px] sm:text-xs md:text-sm text-slate-300 whitespace-nowrap">
+                        {topic.participants} participant{topic.participants !== 1 ? 's' : ''}
                       </span>
                     </div>
                   )}
@@ -428,107 +430,110 @@ export function TopicContent({
             <SceneNavigation />
             
             {/* Conversation Lines with Recording */}
-            <div className="space-y-4 sm:space-y-6 md:space-y-8">
+            <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8 w-full">
               {conversationLines.map((line, idx) => (
-                <div key={idx} className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur" />
-                  <div className="relative bg-slate-900/30 backdrop-blur-sm border border-slate-700/30 rounded-lg hover:border-slate-600/50 transition-colors duration-200">
+                <div key={idx} className="relative group w-full">
+                  <div className="absolute -inset-0.5 sm:-inset-1 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur" />
+                  <div className="relative bg-slate-900/30 backdrop-blur-sm border border-slate-700/30 rounded-lg hover:border-slate-600/50 transition-colors duration-200 overflow-hidden w-full">
                     {/* Paragraph Text */}
-                    <p className="text-sm sm:text-base md:text-lg leading-relaxed text-slate-200 p-3 sm:p-4 md:p-6">
+                    <p className="text-xs sm:text-sm md:text-base lg:text-lg leading-relaxed text-slate-200 p-2.5 sm:p-3 md:p-4 lg:p-6 break-words overflow-wrap-anywhere word-break-break-word">
                       {line}
                     </p>
                     
-                    {/* Recording Controls */}
-                    <div className="border-t border-slate-700/30 p-3 sm:p-4 flex items-center justify-between bg-slate-800/20">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {/* Listen (Text-to-Speech) Button */}
-                        <button
-                          onClick={() => speakingIndex === idx ? stopSpeaking() : speakText(line, idx)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                            speakingIndex === idx
-                              ? 'bg-orange-600 hover:bg-orange-700 animate-pulse'
-                              : 'bg-purple-600 hover:bg-purple-700'
-                          } text-white`}
-                        >
-                          {speakingIndex === idx ? (
-                            <>
-                              <VolumeX size={16} />
-                              <span className="text-xs sm:text-sm font-medium">Stop</span>
-                            </>
+                    {/* Recording Controls - Optimized for small screens */}
+                    <div className="border-t border-slate-700/30 p-2 sm:p-2.5 md:p-3 lg:p-4 bg-slate-800/20">
+                      <div className="flex flex-col gap-2">
+                        {/* Primary Actions Row */}
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                          {/* Listen Button - Full width on smallest screens */}
+                          <button
+                            onClick={() => speakingIndex === idx ? stopSpeaking() : speakText(line, idx)}
+                            className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1.5 sm:py-2 rounded-md transition-colors text-white text-[11px] sm:text-xs md:text-sm font-medium min-w-0 flex-1 sm:flex-none ${
+                              speakingIndex === idx
+                                ? 'bg-orange-600 hover:bg-orange-700 animate-pulse'
+                                : 'bg-purple-600 hover:bg-purple-700'
+                            }`}
+                          >
+                            {speakingIndex === idx ? (
+                              <>
+                                <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                                <span className="truncate">Stop</span>
+                              </>
+                            ) : (
+                              <>
+                                <Headphones className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                                <span className="truncate">Listen</span>
+                              </>
+                            )}
+                          </button>
+
+                          {/* Record/Stop Button */}
+                          {recordingIndex === idx ? (
+                            <button
+                              onClick={stopRecording}
+                              className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1.5 sm:py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors text-[11px] sm:text-xs md:text-sm font-medium animate-pulse min-w-0 flex-1 sm:flex-none"
+                            >
+                              <MicOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                              <span className="truncate">Stop</span>
+                            </button>
                           ) : (
-                            <>
-                              <Headphones size={16} />
-                              <span className="text-xs sm:text-sm font-medium">Listen</span>
-                            </>
+                            <button
+                              onClick={() => startRecording(idx)}
+                              disabled={recordingIndex !== null}
+                              className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1.5 sm:py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:cursor-not-allowed text-white rounded-md transition-colors text-[11px] sm:text-xs md:text-sm font-medium min-w-0 flex-1 sm:flex-none"
+                            >
+                              <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                              <span className="truncate">Record</span>
+                            </button>
                           )}
-                        </button>
+                        </div>
 
-                        {/* Record/Stop Button */}
-                        {recordingIndex === idx ? (
-                          <button
-                            onClick={stopRecording}
-                            className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors animate-pulse"
-                          >
-                            <MicOff size={16} />
-                            <span className="text-xs sm:text-sm font-medium">Stop</span>
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => startRecording(idx)}
-                            disabled={recordingIndex !== null}
-                            className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-                          >
-                            <Mic size={16} />
-                            <span className="text-xs sm:text-sm font-medium">Record</span>
-                          </button>
-                        )}
-
-                        {/* Play Button */}
+                        {/* Secondary Actions Row - Only show when recording exists */}
                         {recordings.has(idx) && (
-                          <>
-                            <button
-                              onClick={() => playRecording(idx)}
-                              className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-                            >
-                              {playingIndex === idx ? (
-                                <>
-                                  <Pause size={16} />
-                                  <span className="text-xs sm:text-sm font-medium">Pause</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Volume2 size={16} />
-                                  <span className="text-xs sm:text-sm font-medium">Play</span>
-                                </>
-                              )}
-                            </button>
+                          <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+                            <div className="flex items-center gap-1.5 sm:gap-2 flex-1">
+                              <button
+                                onClick={() => playRecording(idx)}
+                                className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1.5 sm:py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-[11px] sm:text-xs md:text-sm font-medium flex-1 sm:flex-none min-w-0"
+                              >
+                                {playingIndex === idx ? (
+                                  <>
+                                    <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                                    <span className="truncate">Pause</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                                    <span className="truncate">Play</span>
+                                  </>
+                                )}
+                              </button>
 
-                            {/* Delete Button */}
-                            <button
-                              onClick={() => deleteRecording(idx)}
-                              className="flex items-center gap-2 px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/30 rounded-lg transition-colors"
-                              title="Delete recording"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </>
-                        )}
-                      </div>
+                              <button
+                                onClick={() => deleteRecording(idx)}
+                                className="flex items-center justify-center gap-1 px-2 sm:px-2.5 md:px-3 py-1.5 sm:py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/30 rounded-md transition-colors shrink-0"
+                                title="Delete recording"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                <span className="hidden md:inline text-[11px] sm:text-xs md:text-sm">Delete</span>
+                              </button>
+                            </div>
 
-                      {/* Recording Status */}
-                      <div className="flex items-center gap-2">
-                        {speakingIndex === idx && (
-                          <div className="text-xs text-orange-400 flex items-center gap-1">
-                            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-                            <span className="hidden sm:inline">Speaking</span>
+                            {/* Status Indicator */}
+                            <div className="text-[10px] sm:text-xs text-slate-400 shrink-0">
+                              <span className="inline-flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full"></div>
+                                <span className="hidden sm:inline">Saved</span>
+                              </span>
+                            </div>
                           </div>
                         )}
-                        {recordings.has(idx) && (
-                          <div className="text-xs text-slate-400 hidden sm:block">
-                            <span className="inline-flex items-center gap-1">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              Recorded
-                            </span>
+
+                        {/* Speaking Status */}
+                        {speakingIndex === idx && (
+                          <div className="text-[10px] sm:text-xs text-orange-400 flex items-center gap-1">
+                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                            <span>Speaking...</span>
                           </div>
                         )}
                       </div>

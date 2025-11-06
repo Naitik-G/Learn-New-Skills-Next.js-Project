@@ -1,158 +1,215 @@
-# Language Learning Platform
+# 📚 Learn Skills - Interactive Language Learning Platform
 
-A comprehensive language learning application built with Next.js, Supabase, Tailwind CSS, and shadcn/ui components. This platform offers multiple interactive tools to help users improve their language skills with optional progress tracking.
+## 🌟 Live Demo
+
+[**View Live Demo →**](https://learn-new-skills-next-js-project.vercel.app/)
+
+![Learn Skills Preview](./public/preview.png)
+
+> A modern, interactive language learning platform built with Next.js that helps users master English through reading, vocabulary building, and engaging quizzes.
+
 
 ## ✨ Features
 
-### Guest & Authenticated Modes
-- **Guest Mode**: Access all features without creating an account
-- **Full Access Mode**: Login to unlock progress tracking and personalized dashboard
-- **Progress Persistence**: All user activity is saved to Supabase when logged in
+### 📖 Interactive Reading
+- Engaging stories and articles with difficulty levels
+- Word-by-word highlighting and translation
+- Bookmark progress and resume anytime
+- Reading comprehension tracking
 
-### Core Services
+### 📝 Vocabulary Builder
+- Save and organize new words
+- Context-based word learning
+- Spaced repetition system
+- Personal vocabulary collections
 
-#### 1. 🔄 Conversions
-Various language conversion tools to help with text transformation and formatting.
+### 🔊 Pronunciation Practice
+- Text-to-speech integration
+- Listen to correct pronunciations
+- Practice speaking with audio feedback
+- Multiple accent support
 
-#### 2. 📝 Quizzes
-Interactive quizzes across different subjects to test and improve language proficiency:
-- Multiple subjects available
-- Track your scores and improvement over time (logged-in users)
-- Instant feedback on answers
+### 📊 Progress Dashboard
+- Track your learning journey
+- Visual analytics and statistics
+- Streak tracking and milestones
+- Performance insights across all activities
 
-#### 3. 🗣️ Pronunciation Practice
-Learn proper pronunciation with audio guidance:
-- Practice individual words
-- Work on full sentences
-- Audio playback for reference
+### 🎯 Interactive Quizzes
+- Multiple quiz types (MCQ, Fill-in-the-blanks, Matching)
+- Adaptive difficulty based on performance
+- Instant feedback and explanations
+- Timed challenges for skill assessment
 
-#### 4. 📚 Vocabulary Builder
-Expand your vocabulary systematically:
-- Learn new words daily
-- Organized by difficulty and topic
-- Track learned vocabulary (logged-in users)
-
-### 📊 Dashboard (Logged-in Users)
-- View your learning progress across all services
-- Track quiz scores and completion rates
-- Monitor vocabulary growth
-- See pronunciation practice history
+### 👤 User Authentication
+- Secure login and registration
+- Profile customization
+- Learning preferences and settings
+- Data synchronization across devices
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [Next.js](https://nextjs.org/) (React framework)
-- **Database & Auth**: [Supabase](https://supabase.com/) (Backend-as-a-Service)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Utility-first CSS)
-- **UI Components**: [shadcn/ui](https://ui.shadcn.com/) (Re-usable components)
-- **Language**: TypeScript
+### Frontend
+- **[Next.js 14](https://nextjs.org/)** - React framework with App Router
+- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe development
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[shadcn/ui](https://ui.shadcn.com/)** - Beautiful UI components
+- **[Lucide Icons](https://lucide.dev/)** - Modern icon library
+
+### Backend & Database
+- **[Supabase](https://supabase.com/)** - Backend as a Service
+  - PostgreSQL database
+  - Authentication
+  - Real-time subscriptions
+  - Row Level Security (RLS)
+
+### Additional Libraries
+- **[Recharts](https://recharts.org/)** - Data visualization
+- **[React Hook Form](https://react-hook-form.com/)** - Form management
+- **[Zod](https://zod.dev/)** - Schema validation
+- **Web Speech API** - Text-to-speech functionality
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js 18+ installed
-- A Supabase account and project
+- npm or yarn package manager
+- Supabase account ([Sign up here](https://supabase.com))
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository**
 ```bash
-git clone <repository-url>
-cd <project-directory>
+git clone https://github.com/yourusername/learn-skills.git
+cd learn-skills
 ```
 
-2. Install dependencies:
+2. **Install dependencies**
 ```bash
 npm install
 # or
 yarn install
-# or
-pnpm install
 ```
 
-3. Set up environment variables:
+3. **Set up environment variables**
+
 Create a `.env.local` file in the root directory:
+
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-4. Run the development server:
+4. **Set up Supabase Database**
+
+Run the SQL migrations in your Supabase SQL editor:
+
+```sql
+-- Create necessary tables
+-- See /supabase/migrations/ folder for complete schema
+```
+
+5. **Run the development server**
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## 📁 Project Structure
-
-```
-├── app/                    # Next.js app directory
-│   ├── (auth)/            # Authentication routes
-│   ├── (dashboard)/       # Dashboard routes (protected)
-│   ├── conversions/       # Conversion tools
-│   ├── quiz/              # Quiz feature
-│   ├── pronunciation/     # Pronunciation practice
-│   └── vocabulary/        # Vocabulary builder
-├── components/            # React components
-│   ├── ui/               # shadcn/ui components
-│   └── ...               # Custom components
-├── lib/                  # Utility functions
-│   ├── supabase/        # Supabase client & helpers
-│   └── ...
-├── public/              # Static assets
-└── styles/              # Global styles
-```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🗄️ Database Schema
 
-### Users Progress Table
-Stores user learning progress when logged in:
-- Quiz scores and completion
-- Vocabulary learned count
-- Pronunciation practice sessions
-- Conversion tool usage
+### Key Tables
+- `users` - User profiles and preferences
+- `reading_materials` - Stories and articles
+- `vocabulary` - User's saved words
+- `user_progress` - Reading and learning progress
+- `quiz_results` - Quiz performance data
+- `user_stats` - Daily/weekly statistics
 
-## 🔐 Authentication
+## 🎨 Features in Detail
 
-- Powered by Supabase Auth
-- Supports email/password authentication
-- Optional social login providers
-- Guest mode available for trying features
+### Interactive Reading Experience
+The reading module provides an immersive learning experience with:
+- Click-to-translate any word
+- Progress saving with bookmarks
+- Difficulty-based content filtering
+- Reading time tracking
 
-## 🎨 Customization
+### Smart Vocabulary System
+- Automatic word difficulty detection
+- Context preservation for each saved word
+- Review scheduling based on spaced repetition
+- Export vocabulary lists
 
-The project uses Tailwind CSS for styling and shadcn/ui for components. You can customize:
-- Theme colors in `tailwind.config.js`
-- Component styles in respective component files
-- Global styles in `globals.css`
+### Progress Analytics
+- Daily streak tracking
+- Words learned counter
+- Reading time statistics
+- Quiz performance graphs
+- Achievement badges
 
-## 📱 Responsive Design
+## 🔐 Security
 
-Fully responsive design that works seamlessly on:
-- Desktop computers
-- Tablets
-- Mobile devices
+- Row Level Security (RLS) enabled on all tables
+- Secure authentication with Supabase Auth
+- Environment variables for sensitive data
+- Input validation with Zod schemas
+
+## 🌐 Deployment
+
+### Deploy on Vercel
+
+1. Push your code to GitHub
+2. Import project in [Vercel](https://vercel.com)
+3. Add environment variables
+4. Deploy!
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/learn-skills)
+
+## 📝 Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous key |
 
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🐛 Bug Reports
+## 👤 Author
 
-If you discover any bugs, please create an issue on GitHub with detailed information about the problem.
+**Your Name**
+- GitHub: [@yourusername](https://github.com/yourusername)
+- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
 
-## 📞 Support
+## 🙏 Acknowledgments
 
-For support and questions, please open an issue in the repository.
+- [Next.js](https://nextjs.org/) for the amazing framework
+- [Supabase](https://supabase.com/) for the backend infrastructure
+- [shadcn/ui](https://ui.shadcn.com/) for the beautiful components
+- [Vercel](https://vercel.com/) for hosting
+
+## 📧 Contact
+
+For any queries or suggestions, feel free to reach out:
+- Email: your.email@example.com
+- Project Link: [https://github.com/yourusername/learn-skills](https://github.com/yourusername/learn-skills)
 
 ---
 
-Built with ❤️ using Next.js and Supabase
+<div align="center">
+Made with ❤️ for language learners worldwide
+</div>
