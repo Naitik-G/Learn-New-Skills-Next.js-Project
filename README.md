@@ -50,7 +50,7 @@
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **[Next.js 14](https://nextjs.org/)** - React framework with App Router
+- **[Next.js 15](https://nextjs.org/)** - React framework with App Router
 - **[TypeScript](https://www.typescriptlang.org/)** - Type-safe development
 - **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
 - **[shadcn/ui](https://ui.shadcn.com/)** - Beautiful UI components
@@ -64,9 +64,7 @@
   - Row Level Security (RLS)
 
 ### Additional Libraries
-- **[Recharts](https://recharts.org/)** - Data visualization
 - **[React Hook Form](https://react-hook-form.com/)** - Form management
-- **[Zod](https://zod.dev/)** - Schema validation
 - **Web Speech API** - Text-to-speech functionality
 
 ## 🚀 Getting Started
@@ -100,15 +98,6 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-4. **Set up Supabase Database**
-
-Run the SQL migrations in your Supabase SQL editor:
-
-```sql
--- Create necessary tables
--- See /supabase/migrations/ folder for complete schema
-```
-
 5. **Run the development server**
 ```bash
 npm run dev
@@ -118,15 +107,6 @@ yarn dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 🗄️ Database Schema
-
-### Key Tables
-- `users` - User profiles and preferences
-- `reading_materials` - Stories and articles
-- `vocabulary` - User's saved words
-- `user_progress` - Reading and learning progress
-- `quiz_results` - Quiz performance data
-- `user_stats` - Daily/weekly statistics
 
 ## 🎨 Features in Detail
 
@@ -175,25 +155,11 @@ The reading module provides an immersive learning experience with:
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous key |
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👤 Author
 
 **Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
+- GitHub: [@Naitik-G](https://github.com/Naitik-G/Learn-New-Skills-Next.js-Project)
 
 ## 🙏 Acknowledgments
 
@@ -205,7 +171,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📧 Contact
 
 For any queries or suggestions, feel free to reach out:
-- Email: your.email@example.com
+- Email: kumarnaitk22@gmail.com
 - Project Link: [https://github.com/yourusername/learn-skills](https://github.com/yourusername/learn-skills)
 
 ---

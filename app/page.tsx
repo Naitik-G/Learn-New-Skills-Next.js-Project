@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import {
-  BookOpen, Mic, MessageCircle, Brain, Trophy, Globe,
-  ArrowRight, Check, Star, Users, Zap, Target, Clock,
+  BookOpen, Mic, Brain, Trophy, Globe,
+  ArrowRight, Check, Users, Target, Clock,
   Calculator, Palette,
 } from 'lucide-react';
 import Link from 'next/link';

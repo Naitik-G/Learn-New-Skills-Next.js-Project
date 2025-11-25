@@ -32,7 +32,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/auth')
+    router.push('/auth/login') // Changed from '/auth' to '/auth/login'
     setIsProfileOpen(false)
   }
 
