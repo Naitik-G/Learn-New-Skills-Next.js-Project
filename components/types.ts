@@ -45,26 +45,22 @@ export type LearningModuleProps = {
 export interface Topic {
   id: string;
   title: string;
-  category: string; // Ensure category is always present after grouping
+  conversation: string[];
+  category?: string;
   isCustom?: boolean;
   participants?: number;
   createdAt?: string;
-   conversation?: string[] | ConversationScene[];
-  // For the new nested structure
-  conversations?: Record<string, ConversationScene>;
-  summary?: string;
 }
 
-export interface ConversationLine {
-  speaker: string;
-  text: string;
-}
-
-export interface ConversationScene {
-  title: string;
-  setting: string;
-  dialogue: string[];
-}
+export const CATEGORIES = {
+  chemistry: { name: 'Chemistry', icon: FlaskConical, color: 'text-emerald-400 group-hover:text-emerald-300', bgColor: 'hover:bg-emerald-500/10' },
+  physics: { name: 'Physics', icon: Atom, color: 'text-cyan-400 group-hover:text-cyan-300', bgColor: 'hover:bg-cyan-500/10' },
+  biology: { name: 'Biology', icon: Dna, color: 'text-green-400 group-hover:text-green-300', bgColor: 'hover:bg-green-500/10' },
+  math: { name: 'Mathematics', icon: Calculator, color: 'text-violet-400 group-hover:text-violet-300', bgColor: 'hover:bg-violet-500/10' },
+  history: { name: 'History', icon: Clock, color: 'text-amber-400 group-hover:text-amber-300', bgColor: 'hover:bg-amber-500/10' },
+  politics: { name: 'Politics', icon: Users, color: 'text-rose-400 group-hover:text-rose-300', bgColor: 'hover:bg-rose-500/10' },
+  custom: { name: 'Custom Conversations', icon: MessageCircle, color: 'text-purple-400 group-hover:text-purple-300', bgColor: 'hover:bg-purple-500/10' }
+};
 
 // Category configuration interface
 export interface CategoryConfig {

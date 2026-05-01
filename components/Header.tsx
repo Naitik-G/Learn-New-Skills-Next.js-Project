@@ -19,7 +19,7 @@ const publicNavLinks = [
 const authenticatedNavLinks = [
   { label: 'Vocabulary', href: '/vocabulary', icon: BookOpen },
   { label: 'Topics', href: '/aiTopic', icon: BookOpen },
-  { label: 'Pronunciation', href: '/pronunciation', icon: BookOpen },
+  { label: 'Pronunciation', href: '/custom-sentences', icon: BookOpen },
   { label: 'Quiz', href: '/quiz', icon: BookOpen },
 ]
 
@@ -32,14 +32,14 @@ export default function Header() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/auth/login') // Changed from '/auth' to '/auth/login'
+    router.push('/') // Changed from '/auth' to '/auth/login'
     setIsProfileOpen(false)
   }
 
   // Show loading state
   if (loading) {
     return (
-      <header className="border-b bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 mb-5">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-2">

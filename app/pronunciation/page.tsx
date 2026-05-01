@@ -372,7 +372,7 @@ const PronunciationPractice = () => {
             <h1 className="text-3xl font-bold text-gray-100">
               Pronunciation Practice
             </h1>
-            {/* {!user && (
+            {!user && (
               <button
                 onClick={() => router.push('/login')}
                 className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
@@ -380,7 +380,7 @@ const PronunciationPractice = () => {
                 <LogIn size={16} />
                 <span>Log In for Full Access</span>
               </button>
-            )} */}
+            )}
           </div>
 
           {/* Guest Limit Banner */}

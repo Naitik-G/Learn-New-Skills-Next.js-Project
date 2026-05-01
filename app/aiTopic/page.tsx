@@ -1,195 +1,257 @@
-// app/dashboard/aiTopic/page.tsx
 'use client';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { useTopicsData } from '@/hooks/useTopicsData';
-import { AISidebar } from '@/components/ai-topics/AISidebar';
-import { TopicContent } from '@/components/ai-topics/TopicContent';
-// import { AIGenerationModal } from '@/components/ai-topics/AIGenerationModal';
+import React, { useState, useEffect, useMemo } from 'react';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { useAuth } from '@/context/AuthContext';
+import { createClient } from '@/lib/supabase/client';
+import { topicsData } from '@/data/topicsData';
+
+// Components
+import { TopicsSidebar } from '@/components/conversation/TopicsSidebar';
+import { TopicView } from '@/components/conversation/TopicView';
 import WordPopup from '@/components/DictionaryPopup';
-import { Lock } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { Topic, CATEGORIES } from '@/components/types';
+// Import the modal we are about to use logic for
+import { Save, Sparkles, X, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function TopicsPage() {
-  const router = useRouter();
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
+  const [popupPos, setPopupPos] = useState<{ x: number; y: number } | null>(null);
+  const [openCategories, setOpenCategories] = useState<string[]>(Object.keys(CATEGORIES));
+  const [customTopics, setCustomTopics] = useState<Topic[]>([]);
+
+  // AI Generation States
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [conversationTopic, setConversationTopic] = useState('');
+  const [participantCount, setParticipantCount] = useState<2 | 3>(2);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   
-  const {
-    user,
-    topic,
-    groupedTopics,
-    categories,
-    selectedId,
-    openCategories,
-    selectedWord,
-    popupPos,
-    showAIModal,
-    conversationTopic,
-    participantCount,
-    isGenerating,
-    errorMessage,
-    currentScene,
-    // Methods
-    setSelectedId,
-    toggleCategory,
-    handleTextSelection,
-    closeDictionaryPopup,
-    setShowAIModal,
-    setConversationTopic,
-    setParticipantCount,
-    generateConversation,
-    deleteCustomConversation,
-    getParticipantIcon,
-    // Add these missing methods from the hook
-    getCurrentConversationLines,
-    getAvailableScenes,
-    switchScene
-  } = useTopicsData();
+  const { user } = useAuth();
+  const supabase = createClient();
 
-  const handleModalClose = () => {
-    setShowAIModal(false);
-    setConversationTopic('');
+  // Normalize static topics
+  const normalizeTopicData = (rawTopics: Record<string, any>): Record<string, Topic> => {
+    return Object.entries(rawTopics).reduce((acc, [id, topic]) => {
+      let conversation: string[] = [];
+      if (Array.isArray(topic.conversation)) {
+        conversation = topic.conversation;
+      } else if (topic.conversations && typeof topic.conversations === 'object') {
+        conversation = Object.values(topic.conversations)
+          .flatMap((scene: any) => scene.dialogue ?? []);
+      }
+      acc[id] = {
+        id,
+        title: topic.title,
+        conversation,
+        category: topic.category || 'chemistry',
+        isCustom: false,
+      };
+      return acc;
+    }, {} as Record<string, Topic>);
   };
 
-  // Intercept AI generation to check for login
-  const handleGenerateClick = () => {
-    if (!user) {
-      setShowLoginPrompt(true);
-      return;
+  const allTopics = useMemo(() => {
+    const normalized = normalizeTopicData(topicsData as Record<string, any>);
+    const customMap = customTopics.reduce((acc, t) => {
+      acc[t.id] = t;
+      return acc;
+    }, {} as Record<string, Topic>);
+    return { ...normalized, ...customMap };
+  }, [customTopics]);
+
+  const groupedTopics = useMemo(() => {
+    return Object.entries(allTopics).reduce((acc, [id, t]) => {
+      const catKey = t.isCustom ? 'custom' : (t.category || 'chemistry');
+      if (!acc[catKey]) acc[catKey] = [];
+      acc[catKey].push(t);
+      return acc;
+    }, {} as Record<string, Topic[]>);
+  }, [allTopics]);
+
+  const currentTopic = selectedId ? allTopics[selectedId] : null;
+
+  // --- LOGIC: Fetch Custom Topics ---
+  const loadCustomTopics = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('custom_conversations')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (data) {
+      setCustomTopics(data.map(item => ({
+        id: item.id,
+        title: item.title,
+        conversation: item.conversation || [],
+        category: 'custom',
+        isCustom: true,
+        participants: item.participants || 2
+      })));
     }
-    setShowAIModal(true);
   };
 
-  const handleGenerateConversation = async () => {
-    if (!user) {
-      setShowLoginPrompt(true);
-      return;
+  // --- LOGIC: Generate Conversation ---
+  const handleGenerateAI = async () => {
+    if (!conversationTopic.trim() || !user) return;
+    setIsGenerating(true);
+    setErrorMessage('');
+    try {
+      const response = await fetch('/api/generate_conversation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: conversationTopic.trim(), participants: participantCount }),
+      });
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      const { data: savedData, error } = await supabase.from('custom_conversations').insert({
+        user_id: user.id,
+        title: conversationTopic.trim(),
+        conversation: data.conversation,
+        participants: participantCount,
+        topic_description: conversationTopic.trim()
+      }).select().single();
+
+      if (error) throw error;
+
+      const newTopic: Topic = {
+        id: savedData.id,
+        title: savedData.title,
+        conversation: savedData.conversation,
+        category: 'custom',
+        isCustom: true,
+        participants: participantCount
+      };
+
+      setCustomTopics(prev => [newTopic, ...prev]);
+      setSelectedId(newTopic.id);
+      setShowAIModal(false);
+      setConversationTopic('');
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to generate');
+    } finally {
+      setIsGenerating(false);
     }
-    await generateConversation();
   };
 
-  const handleDeleteCustom = (id: string) => {
-    if (!user) {
-      setShowLoginPrompt(true);
-      return;
+  const handleDelete = async (id: string) => {
+    if (!user) return;
+    const { error } = await supabase.from('custom_conversations').delete().eq('id', id);
+    if (!error) {
+      setCustomTopics(prev => prev.filter(t => t.id !== id));
+      if (selectedId === id) setSelectedId(null);
     }
-    deleteCustomConversation(id);
+  };
+
+  useEffect(() => { if (user) loadCustomTopics(); }, [user]);
+
+  const handleTextSelection = () => {
+    const sel = window.getSelection();
+    if (sel && sel.toString().trim()) {
+      const rect = sel.getRangeAt(0).getBoundingClientRect();
+      setSelectedWord(sel.toString().trim());
+      setPopupPos({ x: rect.left + rect.width / 2, y: rect.top - 10 });
+    }
   };
 
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-slate-950 text-slate-100" onMouseUp={handleTextSelection}>
-        
-        {/* Top Banner for non-authenticated users */}
-        {/* {!user && (
-          <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-b border-yellow-500/30 backdrop-blur-sm">
-            <div className="max-w-7xl mx-auto px-4 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Lock className="w-5 h-5 text-yellow-400" />
-                  <div>
-                    <p className="text-sm font-medium text-yellow-100">
-                      You&apos;re browsing in guest mode
-                    </p>
-                    <p className="text-xs text-yellow-200">
-                      Login to generate custom AI conversations and save your progress
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => router.push('/auth/login')}
-                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-slate-900 rounded-lg font-medium text-sm transition-colors"
-                >
-                  Login Now
-                </button>
-              </div>
-            </div>
-          </div>
-        )} */}
-
-        {/* Sidebar (Navigation) */}
-        <AISidebar
-          groupedTopics={groupedTopics}
-          categories={categories}
+        <TopicsSidebar 
+          groupedTopics={groupedTopics} 
           selectedId={selectedId}
+          onSelect={setSelectedId}
+          // FIX: Pass the modal open function
+          onOpenAIModal={() => setShowAIModal(true)} 
           openCategories={openCategories}
+          toggleCategory={(id) => setOpenCategories(prev => 
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+          )}
+          onDelete={handleDelete}
           user={user}
-          setSelectedId={setSelectedId}
-          toggleCategory={toggleCategory}
-          deleteCustomConversation={handleDeleteCustom}
-          setShowAIModal={handleGenerateClick}
-          getParticipantIcon={getParticipantIcon}
         />
+        
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <header className="border-b border-slate-800 px-6 py-4 flex items-center gap-3 bg-slate-900/50 backdrop-blur-sm">
+            <SidebarTrigger className="hover:bg-slate-800" />
+            <div className="w-[2px] h-6 bg-slate-700 mx-2" />
+            <h1 className="text-lg font-bold text-slate-100">
+              {currentTopic ? currentTopic.title : 'Learning Topics'}
+            </h1>
+          </header>
 
-        {/* Main Content Area */}
-        <div className={`flex-1 ${!user ? 'pt-1' : ''}`}>
-          <TopicContent
-            topic={topic}
-            user={user}
-            selectedWord={selectedWord}
-            popupPos={popupPos}
-            setShowAIModal={handleGenerateClick}
-            getParticipantIcon={getParticipantIcon}
-            getCurrentConversationLines={getCurrentConversationLines}
-            getAvailableScenes={getAvailableScenes}
-            currentScene={currentScene}
-            switchScene={switchScene}
-          />
+          <main className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+            <TopicView 
+              topic={currentTopic} 
+              // FIX: Pass the modal open function here too
+              onOpenAIModal={() => setShowAIModal(true)} 
+              user={user} 
+            />
+          </main>
         </div>
 
-        {/* Login Prompt Modal */}
-        {showLoginPrompt && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-900 rounded-2xl p-8 max-w-md w-full shadow-2xl border border-slate-800">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Lock className="w-8 h-8 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-white text-center mb-2">
-                Login Required for AI Features
-              </h2>
-              <p className="text-slate-400 text-center mb-6">
-                Please login to generate custom AI conversations, save progress, and delete custom topics.
-              </p>
-              <div className="space-y-3">
-                <button
-                  onClick={() => router.push('/login')}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 font-medium transition-colors"
-                >
-                  Login Now
-                </button>
-                <button
-                  onClick={() => setShowLoginPrompt(false)}
-                  className="w-full px-4 py-3 border border-slate-700 text-slate-300 rounded-lg hover:bg-slate-800 font-medium transition-colors"
-                >
-                  Continue Browsing
+        {/* --- AI GENERATION MODAL --- */}
+        {showAIModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <Sparkles className="text-purple-400" /> New AI Conversation
+                </h3>
+                <button onClick={() => setShowAIModal(false)}>
+                  <X className="text-slate-500 hover:text-white" />
                 </button>
               </div>
+              
+              <textarea
+                value={conversationTopic}
+                onChange={(e) => setConversationTopic(e.target.value)}
+                placeholder="What should they talk about? (e.g. Benefits of Solar Energy)"
+                className="w-full bg-slate-800 border-slate-700 rounded-xl p-4 mb-4 focus:ring-2 focus:ring-purple-500 outline-none h-32 text-white"
+              />
+
+              <div className="flex gap-4 mb-6">
+                {[2, 3].map(n => (
+                  <button 
+                    key={n} 
+                    onClick={() => setParticipantCount(n as 2|3)} 
+                    className={cn(
+                      "flex-1 py-3 border rounded-xl transition-all", 
+                      participantCount === n ? "bg-purple-600/20 border-purple-500 text-purple-400" : "bg-slate-800 border-slate-700 text-slate-400"
+                    )}
+                  >
+                    {n} Participants
+                  </button>
+                ))}
+              </div>
+
+              {errorMessage && <p className="text-red-400 text-sm mb-4">{errorMessage}</p>}
+
+              <button
+                onClick={handleGenerateAI}
+                disabled={isGenerating || !conversationTopic.trim()}
+                className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isGenerating ? <Loader2 className="animate-spin" /> : <Save size={18} />}
+                {isGenerating ? 'Generating...' : 'Start Generating'}
+              </button>
             </div>
           </div>
         )}
 
-        {/* AI Generation Modal - Only show if user is logged in */}
-        {/* {user && (
-          <AIGenerationModal
-            show={showAIModal}
-            topic={conversationTopic}
-            setTopic={setConversationTopic}
-            participantCount={participantCount}
-            setParticipantCount={setParticipantCount}
-            isGenerating={isGenerating}
-            errorMessage={errorMessage}
-            onGenerate={handleGenerateConversation}
-            onClose={handleModalClose}
-            getParticipantIcon={getParticipantIcon}
-          />
-        )} */}
-        
-        {/* Dictionary Popup (must remain high in the DOM for positioning) */}
         {selectedWord && popupPos && (
-          <WordPopup
-            word={selectedWord}
-            position={popupPos}
-            onClose={closeDictionaryPopup}
+          <WordPopup 
+            word={selectedWord} 
+            position={popupPos} 
+            onClose={() => setSelectedWord(null)} 
           />
         )}
       </div>

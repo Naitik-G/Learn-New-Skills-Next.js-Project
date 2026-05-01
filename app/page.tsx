@@ -25,7 +25,7 @@ const LandingPage = () => {
       title: "Pronunciation Practice",
       description: "AI-powered speech recognition with real-time feedback and phonetics",
       color: "from-green-500 to-emerald-500",
-      path: "/prounciation"
+      path: "/pronunciation"
     },
     // {
     //   icon: MessageCircle,

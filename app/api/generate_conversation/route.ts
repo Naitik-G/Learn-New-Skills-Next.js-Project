@@ -26,12 +26,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create participant names based on count
-    const participantNames = participants === 2 
-      ? ['Alex', 'Jordan'] 
+    const participantNames = participants === 2
+      ? ['Alex', 'Jordan']
       : ['Alex', 'Jordan', 'Casey'];
 
-    // Create a detailed prompt for conversation generation
     const prompt = `You are a skilled conversation writer. Create a realistic, engaging conversation between ${participants} people discussing the following topic: "${topic}"
 
 Requirements:
@@ -44,104 +42,79 @@ Requirements:
 - Make it engaging and informative
 - Use natural speech patterns and transitions
 
-Format your response as a JSON array where each element is a string representing one person's dialogue. Each string should start with the speaker's name followed by a colon and their dialogue.
+IMPORTANT: Respond ONLY with a valid JSON array, no markdown, no backticks, no preamble.
+Each element is a string starting with the speaker's name and a colon.
 
-Example format:
-[
-  "Alex: I think this topic is really fascinating because...",
-  "Jordan: That's an interesting point, Alex. I've always wondered about...",
-  "Alex: You raise a good question. From what I understand..."
-]
+Example:
+["Alex: I think this topic is really fascinating because...", "Jordan: That's an interesting point, Alex. I've always wondered about..."]
 
 Topic: ${topic}
-Number of participants: ${participants}
-Participant names: ${participantNames.join(', ')}
+Participant names: ${participantNames.join(', ')}`;
 
-IMPORTANT: Respond ONLY with the JSON array, no additional text or explanation.`;
-
-    // Make request to OpenRouter using DeepSeek R1 (Free)
-    const deepseekResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    // OpenRouter uses OpenAI-compatible API
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
         'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-        'X-Title': 'Conversation Generator'
+        'X-Title': 'Conversation Generator',
       },
       body: JSON.stringify({
-        model: 'deepseek/deepseek-r1:free',
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
+        model: 'google/gemini-2.5-flash',   // OpenRouter model ID for Gemini Flash
         max_tokens: 2000,
-        top_p: 0.9,
-        stream: false
+        messages: [
+          { role: 'user', content: prompt }
+        ],
       }),
     });
 
-    if (!deepseekResponse.ok) {
-      const errorData = await deepseekResponse.json().catch(() => ({}));
-      console.error('OpenRouter API error:', errorData);
-      throw new Error(`OpenRouter API error: ${deepseekResponse.status} - ${errorData.error?.message || 'Unknown error'}`);
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error('OpenRouter error:', response.status, errorBody);
+      throw new Error(`OpenRouter API error: ${response.status}`);
     }
 
-    const data = await deepseekResponse.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response structure from OpenRouter');
+    const result = await response.json();
+    const generatedText = result.choices?.[0]?.message?.content;
+
+    if (!generatedText) {
+      throw new Error('No content returned from OpenRouter');
     }
 
-    const generatedText = data.choices[0].message.content;
-
-    // Try to extract JSON from the response
-    const jsonMatch = generatedText.match(/\[[\s\S]*\]/);
+    // Parse JSON from response
     let conversationData;
+    const jsonMatch = generatedText.match(/\[[\s\S]*\]/);
 
     if (jsonMatch) {
       try {
         conversationData = JSON.parse(jsonMatch[0]);
       } catch (parseError) {
         console.error('JSON parsing error:', parseError);
-        console.log('Generated text:', generatedText);
         throw new Error('Failed to parse AI response as JSON');
       }
     } else {
-      // Fallback parsing if JSON extraction fails
-      console.warn('No JSON found in response, using fallback parsing');
-      console.log('Generated text:', generatedText);
-      
-      // Try to extract conversation lines from the text
+      // Fallback: split by newlines and filter lines with speaker names
       const lines = generatedText
         .split('\n')
-        .filter(line => {
-          const trimmed = line.trim();
-          return trimmed && trimmed.includes(':') && !trimmed.startsWith('[') && !trimmed.startsWith(']');
-        })
-        .map(line => line.trim().replace(/^["']|["']$/g, '').replace(/,\s*$/, ''))
-        .slice(0, 12); // Limit to 12 lines max
-      
+        .filter((line: string) => line.trim() && line.includes(':'))
+        .map((line: string) => line.trim())
+        .slice(0, 12);
+
       conversationData = lines.length > 0 ? lines : [
-        `${participantNames[0]}: This is an interesting topic about ${topic}. I think it's important to understand the various perspectives and implications it presents.`,
-        `${participantNames[1]}: I agree, ${participantNames[0]}. There are many aspects to consider when discussing ${topic}. What's your take on the current developments in this area?`,
-        `${participantNames[0]}: Well, from what I've observed, the key challenge is finding the right balance. We need to consider both the benefits and potential drawbacks.`,
-        `${participantNames[1]}: That's a nuanced perspective. I think the context really matters here, and we should look at real-world examples to better understand the implications.`
+        `${participantNames[0]}: This is an interesting topic about ${topic}.`,
+        `${participantNames[1]}: I agree, there are many aspects to consider when discussing ${topic}.`
       ];
     }
 
-    // Validate the response
     if (!Array.isArray(conversationData) || conversationData.length === 0) {
       throw new Error('Invalid conversation data generated');
     }
 
-    // Ensure each line has a speaker and content
     const validatedConversation = conversationData
-      .filter(line => typeof line === 'string' && line.includes(':'))
-      .slice(0, 15) // Maximum 15 exchanges
-      .map(line => line.trim());
+      .filter((line: unknown) => typeof line === 'string' && line.includes(':'))
+      .slice(0, 15)
+      .map((line: string) => line.trim());
 
     if (validatedConversation.length < 4) {
       throw new Error('Generated conversation is too short');
@@ -149,29 +122,25 @@ IMPORTANT: Respond ONLY with the JSON array, no additional text or explanation.`
 
     return NextResponse.json({
       conversation: validatedConversation,
-      topic: topic,
-      participants: participants,
+      topic,
+      participants,
       success: true
     });
 
   } catch (error: any) {
-    console.error('DeepSeek/OpenRouter API Error:', error);
-    
-    // Return a more user-friendly error
+    console.error('OpenRouter API Error:', error);
+
     let errorMessage = 'Failed to generate conversation';
-    
-    if (error.message?.includes('API key')) {
-      errorMessage = 'API configuration error. Please check your OpenRouter API key.';
-    } else if (error.message?.includes('quota') || error.message?.includes('limit') || error.message?.includes('rate')) {
-      errorMessage = 'API quota exceeded or rate limited. Please try again later.';
+    if (error.message?.includes('401')) {
+      errorMessage = 'Invalid OpenRouter API key';
+    } else if (error.message?.includes('429') || error.message?.includes('quota')) {
+      errorMessage = 'API quota exceeded, please try again later';
     } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
-      errorMessage = 'Network error. Please check your connection and try again.';
-    } else if (error.message?.includes('parse') || error.message?.includes('JSON')) {
-      errorMessage = 'AI response format error. Please try again with a different topic.';
+      errorMessage = 'Network error, please check your connection';
     }
 
     return NextResponse.json(
-      { 
+      {
         error: errorMessage,
         details: process.env.NODE_ENV === 'development' ? error.message : undefined
       },

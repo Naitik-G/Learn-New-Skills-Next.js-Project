@@ -180,7 +180,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full  `}
       >
         <AuthProvider>
           <ConditionalHeader />

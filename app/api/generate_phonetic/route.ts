@@ -1,5 +1,4 @@
 // app/api/generate-phonetic/route.ts
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -13,66 +12,88 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      console.error("❌ GEMINI_API_KEY not found in env");
+    if (!process.env.OPENROUTER_API_KEY) {
       return NextResponse.json(
-        { error: "Gemini API key is not configured" },
+        { error: "OpenRouter API key is not configured" },
         { status: 500 }
       );
     }
 
-    // Init Gemini
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    // Stricter prompt — no JSON schema ambiguity
+    const prompt = `You are a pronunciation expert. Given the English sentence below, return ONLY a raw JSON object with exactly two keys: "phonetic" (IPA transcription) and "readablePhonetic" (easy syllable-by-syllable guide for non-linguists).
 
-    // Build prompt
-    const prompt = `
-You are a pronunciation expert. For the given English sentence, provide BOTH:
-1. IPA (International Phonetic Alphabet)
-2. Readable phonetic transcription
+Do NOT include markdown, code fences, backticks, or any explanation. Output raw JSON only.
 
-Sentence: "${text}"
+Sentence: ${text}
 
-Respond ONLY as valid JSON:
-{
-  "phonetic": "...",
-  "readablePhonetic": "..."
-}
-`;
+Output format (raw JSON, nothing else):
+{"phonetic":"...","readablePhonetic":"..."}`;
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const generatedText = response.text();
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+        "X-Title": "Phonetic Generator",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        max_tokens: 500,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
 
-    console.log("🔍 Raw Gemini output:", generatedText);
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("OpenRouter error:", response.status, errorBody);
+      throw new Error(`OpenRouter API error: ${response.status} — ${errorBody}`);
+    }
 
-    // Remove code fences if present
+    const result = await response.json();
+    console.log("OpenRouter raw result:", JSON.stringify(result, null, 2));
+
+    const generatedText = result.choices?.[0]?.message?.content;
+    console.log("Generated text:", generatedText);
+
+    if (!generatedText) {
+      throw new Error("No content returned from OpenRouter");
+    }
+
+    // Strip any accidental markdown fences
     const cleanText = generatedText
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
+      .replace(/```json\s*/gi, "")
+      .replace(/```\s*/g, "")
       .trim();
 
-    // Extract JSON safely
-    let phoneticData: { phonetic: string; readablePhonetic: string };
-    try {
-      phoneticData = JSON.parse(cleanText.match(/\{[\s\S]*\}/)?.[0] || "{}");
-    } catch (err) {
-      console.error("❌ JSON parsing failed:", err);
+    console.log("Clean text to parse:", cleanText);
+
+    // Extract the first JSON object found
+    const jsonMatch = cleanText.match(/\{[\s\S]*?\}/);
+    if (!jsonMatch) {
+      console.error("No JSON object found in response:", cleanText);
       return NextResponse.json(
-        {
-          error: "Failed to parse AI response as JSON",
-          raw: generatedText,
-        },
+        { error: "AI did not return a JSON object", raw: generatedText },
+        { status: 500 }
+      );
+    }
+
+    let phoneticData: { phonetic?: string; readablePhonetic?: string };
+    try {
+      phoneticData = JSON.parse(jsonMatch[0]);
+      console.log("Parsed phonetic data:", phoneticData);
+    } catch (err) {
+      console.error("JSON parse error:", err, "Raw match:", jsonMatch[0]);
+      return NextResponse.json(
+        { error: "Failed to parse AI response as JSON", raw: generatedText },
         { status: 500 }
       );
     }
 
     if (!phoneticData.phonetic || !phoneticData.readablePhonetic) {
+      console.error("Missing fields in phonetic data:", phoneticData);
       return NextResponse.json(
-        {
-          error: "Incomplete phonetic data",
-          raw: generatedText,
-        },
+        { error: "AI returned JSON but fields are missing", raw: generatedText, parsed: phoneticData },
         { status: 500 }
       );
     }
@@ -82,16 +103,19 @@ Respond ONLY as valid JSON:
       readablePhonetic: phoneticData.readablePhonetic.trim(),
       success: true,
     });
+
   } catch (error: any) {
-    console.error("❌ Gemini API Error:", error);
+    console.error("generate-phonetic error:", error);
+
+    let errorMessage = "Failed to generate phonetics";
+    if (error.message?.includes("401")) errorMessage = "Invalid OpenRouter API key";
+    else if (error.message?.includes("429") || error.message?.includes("quota")) errorMessage = "API quota exceeded, please try again later";
+    else if (error.message?.includes("network") || error.message?.includes("fetch")) errorMessage = "Network error, please check your connection";
 
     return NextResponse.json(
       {
-        error: "Gemini API request failed",
-        details:
-          process.env.NODE_ENV === "development"
-            ? error.message || String(error)
-            : undefined,
+        error: errorMessage,
+        details: process.env.NODE_ENV === "development" ? error.message : undefined,
       },
       { status: 500 }
     );
