@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     // Public routes that don't require redirect
-    const publicRoutes = ['/login', '/register', '/auth/login', '/auth/register', '/forgot-password'];
+    const publicRoutes = [ '/auth/login', '/auth/register', '/forgot-password'];
     const isPublicRoute = publicRoutes.some(route => pathname?.startsWith(route));
     const isHomePage = pathname === '/';
 

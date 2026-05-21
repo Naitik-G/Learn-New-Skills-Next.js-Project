@@ -46,15 +46,15 @@ const LandingPage = () => {
       title: "Progress Tracking",
       description: "Monitor your improvement with detailed analytics and achievements",
       color: "from-yellow-500 to-amber-500",
-      path: "/dashboard"
+      path: "/auth/login"
     },
-    {
-      icon: Globe,
-      title: "Multi-Subject Learning",
-      description: "Expand beyond language - explore math, science, and more",
-      color: "from-indigo-500 to-violet-500",
-      path: "/dashboard"
-    }
+    // {
+    //   icon: Globe,
+    //   title: "Multi-Subject Learning",
+    //   description: "Expand beyond language - explore math, science, and more",
+    //   color: "from-indigo-500 to-violet-500",
+    //   path: "/dashboard"
+    // }
   ];
 
   const additionalServices = [
