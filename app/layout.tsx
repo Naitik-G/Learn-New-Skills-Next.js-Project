@@ -5,6 +5,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import ConditionalHeader from "@/components/ConditionalHeader";
 import { ThemeProvider, themeInitScript } from "@/components/theme/ThemeProvider";
+import Script from "next/script";
 
 const sansFont = Plus_Jakarta_Sans({
   variable: "--font-sans-app",
@@ -130,6 +131,14 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         
+        {/* Google AdSense Script */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2581164863606391"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+
         {/* Structured Data - Organization */}
         <script
           type="application/ld+json"
